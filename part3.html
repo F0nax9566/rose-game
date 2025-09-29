@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Часть 3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="dialogueContainer" class="dialogue-box bordered">
+        <div class="text-content" id="textContent"></div>
+        <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="progressArrow">
+    </div>
+    
+    <script>
+        const textContent = document.getElementById('textContent');
+        const progressArrow = document.getElementById('progressArrow');
+        const speakerSounds = [ new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav"), new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav") ];
+        const placeholderDialogue = [ "* извините, страница в разработке!", "* и нет, это точно не потому что фонакс наелся кляра и откинулся." ];
+        
+        let dialogueIndex = 0;
+        let isTyping = false;
+        let typingTimeout = null;
+        let canInteract = true;
+
+        function playRandomSpeakerSound() { const sound = speakerSounds[Math.floor(Math.random() * speakerSounds.length)]; sound.currentTime = 0; sound.play(); }
+        
+        function typeText(text, config) {
+            isTyping = true; canInteract = false;
+            textContent.innerHTML = '';
+            progressArrow.classList.remove('arrow-bobbing');
+            let charIndex = 0;
+            function typeChar() {
+                if (charIndex < text.length) {
+                    const char = text.charAt(charIndex);
+                    textContent.innerHTML += char;
+                    if (config.soundPlayer && char !== ' ' && char !== '*') config.soundPlayer();
+                    charIndex++;
+                    let delay = config.speed;
+                    if ((char === '.' || char === ',') && text.charAt(charIndex) !== '(' && text.charAt(charIndex) !== ')') { 
+                        delay += 300; 
+                    }
+                    typingTimeout = setTimeout(typeChar, delay);
+                } else {
+                    isTyping = false;
+                    canInteract = true;
+                    progressArrow.classList.add('arrow-bobbing');
+                }
+            }
+            typeChar();
+        }
+
+        function returnToMainMenu() {
+            window.location.href = 'rose.html';
+        }
+
+        function nextPlaceholderStep() {
+            if (!canInteract) return;
+            if (dialogueIndex >= placeholderDialogue.length) {
+                returnToMainMenu();
+                return;
+            }
+            const text = placeholderDialogue[dialogueIndex];
+            typeText(text, { speed: 50, soundPlayer: playRandomSpeakerSound });
+            dialogueIndex++;
+        }
+
+        window.onload = nextPlaceholderStep;
+        progressArrow.addEventListener('click', nextPlaceholderStep);
+    </script>
+</body>
+</html>

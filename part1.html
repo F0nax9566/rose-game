@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Часть 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="flowerContainer" class="hidden">
+        <img id="flowerImage" src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="">
+    </div>
+
+    <div id="dialogueContainer" class="dialogue-box bordered hidden">
+        <div class="text-content" id="textContent"></div>
+        <div id="choiceContainer"></div>
+        <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="progressArrow" class="hidden">
+    </div>
+
+    <div id="skipButtonContainer" class="hidden"><span id="skipButton">пропустить?</span></div>
+
+    <div id="confirmationModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+            <div class="scrollable-text" id="confirmationText">
+                вы уверены? это только для тех, кто уже знает сюжет первой части, и приведет вас к выбору. а ещё это сделал фонакс потому что ему было в падлу спамить когда он фиксил баг с кнопками, но забыл убрать это, зато не забыл добавить воды в этот текст.
+            </div>
+            <div id="confirmationChoices">
+                <span class="choice-button" id="confirmYesButton">ода</span>
+                <span class="choice-button" id="confirmNoButton">не надо</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const flowerContainer = document.getElementById('flowerContainer');
+        const dialogueContainer = document.getElementById('dialogueContainer');
+        const textContent = document.getElementById('textContent');
+        const choiceContainer = document.getElementById('choiceContainer');
+        const progressArrow = document.getElementById('progressArrow');
+        const skipButtonContainer = document.getElementById('skipButtonContainer');
+        const skipButton = document.getElementById('skipButton');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmYesButton = document.getElementById('confirmYesButton');
+        const confirmNoButton = document.getElementById('confirmNoButton');
+        
+        const sndFlicker = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/flicker.wav");
+        const sndTxt1 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/snd_txt1.wav");
+        const sndDoor = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/door.wav");
+        const bgMusic = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Undertale%20-%20Toby%20Fox.mp3");
+        bgMusic.loop = true;
+        const speakerSounds = [ new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav"), new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav") ];
+        const sndTxt2 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/2.wav");
+
+        const storyDialogues = {
+            rose: ["* (Кто-то заботливо полил цветок.)", "* (Цветок пахнет очень знакомо.)"],
+            speaker: [ "* Эй.. тут кто-нибудь есть?", "* ...", "* Так ты всё-таки решил прийти сюда, хм?", "* Тебе стоило поливать его чаще, он.. был на грани.", "* Но это не так важно.", "* ...", "* Хех, а ведь правду говорят...", "* От судьбы не убежишь.", "* ...", "* Ты улыбаешься?", "* Ха... ха...", "* Похоже ты не зря его растил.", "* ...", "* Мне... жаль что я так поступил с тобой.", "* Просто постарайся меньше думать об этом, окей?" ],
+            choice: "Полить цветок?",
+            finale_yes: ["* Хороший выбор.", "* Тебе надо идти.", "* Пожалуйста, не задерживайся.", "* Тебя ждут великие дела."],
+            finale_no: ["* ...", "* Он всёравно не был нужен тебе."]
+        };
+        const replayIntroDialogues = [ "* (Прошлое не вернуть.)", "* (Но вы всёравно хотите что-то изменить...)", "* (В любом случае власть в ваших руках, и это вас радует.)", "* Ненадолго." ];
+        const easterEggDialogue = [ "* Если ты читаешь это то ты руина.", "* Из всех возможных багов на сайте ты нашел только этот?", "* Думаешь самый умный?", "* Да, мне было легче написать диалог чем исправить этот баг, заставив кнопку пропасть во время проигрывания звука двери.", "* А теперь проваливай" ];
+
+        let state = {
+            mode: 'story', branch: 'start', dialogueIndex: 0, 
+            isTyping: false, canInteract: true, typingTimeout: null, currentText: ""
+        };
+        let savedState = {};
+        let doorSoundTimeout = null;
+
+        function typeText(text, config) {
+            state.isTyping = true; state.canInteract = false; state.currentText = text;
+            textContent.innerHTML = ''; choiceContainer.innerHTML = ''; 
+
+            if (config.showArrow !== false) {
+                progressArrow.classList.remove('hidden', 'arrow-bobbing');
+            }
+
+            let charIndex = 0;
+            function typeChar() {
+                if (charIndex < text.length) {
+                    const char = text.charAt(charIndex);
+                     if (config.mode === 'levitate' || config.mode === 'glitch') {
+                        const span = document.createElement('span');
+                        span.innerHTML = (char === ' ') ? '&nbsp;' : char;
+                        if (config.mode === 'levitate') {
+                            span.className = 'levitate-char';
+                            span.style.animationDelay = `${charIndex * 0.1}s, ${charIndex * 0.1}s`;
+                        } else {
+                            span.className = 'glitch-char';
+                        }
+                        textContent.appendChild(span);
+                    } else { 
+                        textContent.innerHTML += char; 
+                    }
+
+                    if (config.soundPlayer && char !== ' ' && char !== '*') config.soundPlayer();
+                    charIndex++; 
+                    let delay = config.speed;
+                    if ((char === '.' || char === ',') && text.charAt(charIndex) !== '(' && text.charAt(charIndex) !== ')') { 
+                        delay += 300; 
+                    }
+                    state.typingTimeout = setTimeout(typeChar, delay);
+                } else {
+                    state.isTyping = false; 
+                    if (config.showArrow !== false) {
+                       progressArrow.classList.add('arrow-bobbing');
+                    }
+                    if (config.onComplete) config.onComplete();
+                    else { state.canInteract = true; }
+                }
+            }
+            typeChar();
+        }
+
+        function skipTyping() { 
+            if (!state.isTyping) return; 
+            clearTimeout(state.typingTimeout); 
+            state.isTyping = false; 
+            state.canInteract = true; 
+            textContent.innerHTML = state.currentText; 
+            progressArrow.classList.add('arrow-bobbing'); 
+        }
+
+        function playRandomSpeakerSound() { const sound = speakerSounds[Math.floor(Math.random() * speakerSounds.length)]; sound.currentTime = 0; sound.play(); }
+        function playSndTxt1() { sndTxt1.currentTime = 0; sndTxt1.play(); }
+        function playSndTxt2() { sndTxt2.currentTime = 0; sndTxt2.play(); }
+        
+        function returnToMainMenu() {
+            window.location.href = 'rose.html';
+        }
+
+        function startPart1Normally() {
+            state.mode = 'story'; state.branch = 'rose'; state.dialogueIndex = 0;
+            document.body.appendChild(flowerContainer);
+            flowerContainer.classList.remove('hidden');
+            flowerContainer.style.opacity = 0;
+            setTimeout(() => { dialogueContainer.classList.remove('hidden'); state.canInteract = true; nextStoryStep(); }, 500);
+        }
+        
+        function startReplayIntro() {
+            localStorage.setItem('replayIntroShown', 'true');
+            state.mode = 'replay_intro'; state.dialogueIndex = 0;
+            dialogueContainer.className = 'dialogue-box bordered';
+            dialogueContainer.classList.remove('hidden');
+            nextReplayStep();
+        }
+
+        function nextReplayStep() {
+            if (state.dialogueIndex >= replayIntroDialogues.length) { return; }
+            const text = replayIntroDialogues[state.dialogueIndex];
+            let config = (state.dialogueIndex === 3) ? { speed: 80, soundPlayer: playSndTxt2 } : { speed: 50, soundPlayer: playSndTxt1 };
+            typeText(text, config);
+            state.dialogueIndex++;
+        }
+
+        function nextStoryStep() {
+            if (!state.canInteract) return;
+            if (state.branch !== 'choice' && state.branch !== 'finale_yes' && state.branch !== 'finale_no') { skipButtonContainer.classList.remove('hidden'); }
+
+            const currentBranchData = storyDialogues[state.branch];
+            if (!currentBranchData || state.dialogueIndex >= currentBranchData.length) {
+                const nextBranch = { 'rose': 'speaker', 'speaker': 'choice', 'finale_yes': 'end_yes', 'finale_no': 'end_no' }[state.branch];
+                if (nextBranch) { state.branch = nextBranch; state.dialogueIndex = 0; handleStoryBranchTransition(); }
+                return;
+            }
+            const text = currentBranchData[state.dialogueIndex];
+            typeText(text, { speed: 50, soundPlayer: state.branch === 'rose' ? playSndTxt1 : playRandomSpeakerSound });
+            state.dialogueIndex++;
+        }
+        
+        function handleStoryBranchTransition() { 
+            if (state.branch === 'speaker') { nextStoryStep(); } 
+            else if (state.branch === 'choice') { skipButtonContainer.classList.add('hidden'); runChoiceSequence(); } 
+            else if (state.branch === 'end_yes' || state.branch === 'end_no') { returnToMainMenu(); }
+        }
+
+        function runChoiceSequence() { state.canInteract = false; sndFlicker.play(); dialogueContainer.classList.add('hidden'); flowerContainer.classList.remove('hidden'); setTimeout(() => { sndFlicker.play(); flowerContainer.style.opacity = 1; }, 500); setTimeout(() => { dialogueContainer.className = "dialogue-box bordered positioned-bottom"; dialogueContainer.classList.remove('hidden'); progressArrow.classList.add('hidden'); typeText(storyDialogues.choice, { speed: 100, mode: 'levitate', onComplete: showChoices, showArrow: false }); }, 1500); }
+        function showChoices() { const choices = ["Полить", "Прости"]; choices.forEach((choiceText, index) => { const button = document.createElement('span'); button.textContent = choiceText; button.className = 'choice-button shake-on-hover'; button.onclick = (event) => { event.stopPropagation(); (choiceText === "Полить" ? handleChoiceYes() : handleChoiceNo()); }; choiceContainer.appendChild(button); setTimeout(() => { button.style.opacity = 1; button.style.pointerEvents = 'auto'; }, 500 * (index + 1)); }); state.canInteract = false; }
+        
+        function handleChoiceYes() {
+            if (!localStorage.getItem('goodchoice') && !localStorage.getItem('badchoice')) { localStorage.setItem('goodchoice', 'true'); }
+            state.canInteract = false; choiceContainer.innerHTML = ''; textContent.innerHTML = ''; state.branch = 'finale_yes'; dialogueContainer.classList.remove('positioned-bottom'); dialogueContainer.classList.add('bordered'); dialogueContainer.classList.remove('borderless'); typeText(storyDialogues.finale_yes[0], { speed: 50, soundPlayer: playRandomSpeakerSound, onComplete: () => { state.canInteract = false; setTimeout(() => { flowerContainer.style.animation = 'fadeOut 2s forwards'; dialogueContainer.classList.add('hidden'); progressArrow.classList.add('hidden'); setTimeout(() => { dialogueContainer.classList.remove('hidden'); state.dialogueIndex = 1; fadeOutMusic(); state.canInteract = true; nextStoryStep(); }, 3000); }, 2000); } }); 
+        }
+
+        function handleChoiceNo() {
+            if (!localStorage.getItem('goodchoice') && !localStorage.getItem('badchoice')) { localStorage.setItem('badchoice', 'true'); }
+            state.canInteract = false;
+            bgMusic.pause(); bgMusic.currentTime = 0;
+            dialogueContainer.classList.add('hidden');
+            flowerContainer.classList.add('hidden');
+            setTimeout(returnToMainMenu, 1500);
+        }
+
+        function fadeOutMusic() { if (bgMusic.volume > 0.1) { state.musicInterval = setInterval(() => { bgMusic.volume = Math.max(0, bgMusic.volume - 0.05); if (bgMusic.volume === 0) clearInterval(state.musicInterval); }, 200); } }
+
+        skipButton.addEventListener('click', () => { if (state.mode === 'story' && !state.canInteract && doorSoundTimeout) { triggerEasterEgg(); return; } if (state.isTyping) skipTyping(); savedState = { text: state.currentText }; confirmationModal.classList.remove('hidden'); confirmYesButton.style.opacity = 1; confirmYesButton.style.pointerEvents = 'auto'; confirmNoButton.style.opacity = 1; confirmNoButton.style.pointerEvents = 'auto'; });
+        function triggerEasterEgg() { clearTimeout(doorSoundTimeout); doorSoundTimeout = null; state.mode = 'easter_egg'; state.dialogueIndex = 0; confirmationModal.classList.add('hidden'); skipButtonContainer.classList.add('hidden'); dialogueContainer.classList.remove('hidden'); nextEasterEggStep(); }
+        function nextEasterEggStep() { if (state.dialogueIndex >= easterEggDialogue.length) { window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; window.close(); return; } const text = easterEggDialogue[state.dialogueIndex]; typeText(text, { speed: 50, soundPlayer: playRandomSpeakerSound }); state.dialogueIndex++; }
+        
+        function skipToChoice() {
+            confirmationModal.classList.add('hidden');
+            skipButtonContainer.classList.add('hidden');
+            document.body.appendChild(flowerContainer);
+            flowerContainer.classList.remove('hidden');
+            flowerContainer.style.opacity = 0;
+            dialogueContainer.classList.add('hidden');
+            state.canInteract = false;
+            sndDoor.play();
+            setTimeout(() => {
+                bgMusic.play();
+                runChoiceSequence();
+            }, 2000);
+        }
+        confirmYesButton.addEventListener('click', skipToChoice);
+        confirmNoButton.addEventListener('click', () => { confirmationModal.classList.add('hidden'); textContent.innerHTML = savedState.text; state.isTyping = false; state.canInteract = true; progressArrow.classList.add('arrow-bobbing'); });
+        
+        progressArrow.addEventListener('click', () => {
+            if (state.isTyping) { skipTyping(); return; }
+            if (!state.canInteract) return;
+
+            if (state.mode === 'story') {
+                if (state.branch === 'speaker' && state.dialogueIndex === 2) {
+                    state.canInteract = false; dialogueContainer.classList.add('hidden'); progressArrow.classList.add('hidden'); sndDoor.play();
+                    doorSoundTimeout = setTimeout(() => {
+                        bgMusic.play(); 
+                        dialogueContainer.classList.remove('hidden');
+                        state.canInteract = true; nextStoryStep();
+                        doorSoundTimeout = null;
+                    }, 2000);
+                } else { nextStoryStep(); }
+            } else if (state.mode === 'replay_intro') {
+                if (state.dialogueIndex < replayIntroDialogues.length) { nextReplayStep(); } 
+                else {
+                    state.canInteract = false; dialogueContainer.classList.add('hidden'); sndFlicker.play();
+                    setTimeout(() => { sndFlicker.play(); startPart1Normally(); }, 2000);
+                }
+            } else if (state.mode === 'easter_egg') { nextEasterEggStep(); }
+        });
+
+        window.onload = () => {
+            if ((localStorage.getItem('goodchoice') || localStorage.getItem('badchoice')) && !localStorage.getItem('replayIntroShown')) {
+                startReplayIntro();
+            } else {
+                startPart1Normally();
+            }
+        };
+    </script>
+</body>
+</html>

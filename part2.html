@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Часть 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="flowerContainer" class="hidden">
+         <img id="flowerImage" src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="">
+    </div>
+    <div id="dialogueContainer" class="dialogue-box bordered hidden">
+        <div class="text-content" id="textContent"></div>
+        <div id="choiceContainer"></div>
+        <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="progressArrow" class="hidden">
+    </div>
+
+    <script>
+        const flowerContainer = document.getElementById('flowerContainer');
+        const dialogueContainer = document.getElementById('dialogueContainer');
+        const textContent = document.getElementById('textContent');
+        const progressArrow = document.getElementById('progressArrow');
+
+        const sndFlicker = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/flicker.wav");
+        const sndTxt1 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/snd_txt1.wav");
+        const bgMusicPart2 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Mysterious%20Place.mp3");
+        bgMusicPart2.loop = true;
+        bgMusicPart2.volume = 0.5;
+        const speakerSounds = [ new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav"), new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav") ];
+
+        const part2Dialogues = {
+            narrator1: ["* (Вы на ощупь вернулись назад.)", "* (Вы не уверены зачем, но вы решили что вам нужно больше.)"],
+            speaker: [ "* С возвращением...", "* Ты выглядишь уставшим.", "* ...", "* Это место... оно помнит твой выбор.", "* Оно создало этот отголосок.", "* Пусто, не правда ли?", "* То, о чем ты заботился...", "* То, чего ты так сильно хотел...", "* ...", "* Что-ж, грубо говорить за спиной у того, кто слушает." ],
+            narrator2: ["* (Вы чувствуете, как что-то изменилось.)", "* (Вы снова проводите рукой по земле...)"],
+            glitch: ["* (Вы поняли что прошлое не вернуть.)"],
+            finale: ["* (Но вы отказались принимать такую судьбу.)"]
+        };
+        const part2LockedDialogue = ["* (Вы видите свет, видимый только вам...)", "* (Но разве не на всё своё время?)"];
+        const part2GoodEndingDialogue = ["* (Время ещё не пришло.)", "* (Вы уже сделали свой выбор.)", "* (Остаётся лишь ждать...)"];
+
+        let state = {
+            mode: 'part2_story', branch: 'start', dialogueIndex: 0, 
+            isTyping: false, canInteract: true, typingTimeout: null, currentText: ""
+        };
+
+        function typeText(text, config) {
+             state.isTyping = true; state.canInteract = false; state.currentText = text;
+            textContent.innerHTML = ''; 
+
+            if (config.showArrow !== false) {
+                progressArrow.classList.remove('hidden', 'arrow-bobbing');
+            }
+
+            let charIndex = 0;
+            function typeChar() {
+                if (charIndex < text.length) {
+                    const char = text.charAt(charIndex);
+                     if (config.mode === 'levitate' || config.mode === 'glitch') {
+                        const span = document.createElement('span');
+                        span.innerHTML = (char === ' ') ? '&nbsp;' : char;
+                        if (config.mode === 'levitate') {
+                            span.className = 'levitate-char';
+                            span.style.animationDelay = `${charIndex * 0.1}s, ${charIndex * 0.1}s`;
+                        } else {
+                            span.className = 'glitch-char';
+                        }
+                        textContent.appendChild(span);
+                    } else { 
+                        textContent.innerHTML += char; 
+                    }
+
+                    if (config.soundPlayer && char !== ' ' && char !== '*') config.soundPlayer();
+                    charIndex++; 
+                    let delay = config.speed;
+                    if ((char === '.' || char === ',') && text.charAt(charIndex) !== '(' && text.charAt(charIndex) !== ')') { 
+                        delay += 300; 
+                    }
+                    state.typingTimeout = setTimeout(typeChar, delay);
+                } else {
+                    state.isTyping = false; 
+                    if (config.showArrow !== false) {
+                       progressArrow.classList.add('arrow-bobbing');
+                    }
+                    if (config.onComplete) config.onComplete();
+                    else { state.canInteract = true; }
+                }
+            }
+            typeChar();
+        }
+
+        function skipTyping() { 
+            if (!state.isTyping) return; 
+            clearTimeout(state.typingTimeout); 
+            state.isTyping = false; 
+            state.canInteract = true; 
+            textContent.innerHTML = state.currentText; 
+            progressArrow.classList.add('arrow-bobbing'); 
+        }
+
+        function playRandomSpeakerSound() { const sound = speakerSounds[Math.floor(Math.random() * speakerSounds.length)]; sound.currentTime = 0; sound.play(); }
+        function playSndTxt1() { sndTxt1.currentTime = 0; sndTxt1.play(); }
+
+        function returnToMainMenu() {
+            bgMusicPart2.pause();
+            bgMusicPart2.currentTime = 0;
+            window.location.href = 'rose.html';
+        }
+
+        function startPart2() {
+            state.mode = 'part2_story';
+            state.branch = 'narrator1';
+            state.dialogueIndex = 0;
+            dialogueContainer.classList.remove('hidden');
+            nextPart2Step();
+        }
+
+        function nextPart2Step() {
+            if (!state.canInteract && !state.isTyping) return;
+            
+            const currentBranchData = part2Dialogues[state.branch];
+            if (!currentBranchData || state.dialogueIndex >= currentBranchData.length) {
+                const nextBranchMap = { 'narrator1': 'speaker', 'speaker': 'transitionToFlower', 'narrator2': 'glitch', 'glitch': 'transitionToFinale', 'finale': 'end_part2' };
+                const nextBranch = nextBranchMap[state.branch];
+
+                if (nextBranch) {
+                    state.branch = nextBranch;
+                    state.dialogueIndex = 0;
+                    state.canInteract = false;
+
+                    if (state.branch === 'speaker') {
+                        state.canInteract = true;
+                        nextPart2Step();
+                    } else if (state.branch === 'glitch') {
+                        bgMusicPart2.pause();
+                        dialogueContainer.classList.add('glitch-dialogue');
+                        state.canInteract = true;
+                        nextPart2Step();
+                    } else if (state.branch === 'transitionToFlower') {
+                        dialogueContainer.classList.add('hidden');
+                        sndFlicker.play();
+                        setTimeout(() => {
+                            document.body.classList.add('part2-active-body');
+                            document.body.appendChild(flowerContainer);
+                            document.body.appendChild(dialogueContainer);
+                            dialogueContainer.className = 'dialogue-box bordered hidden';
+                            flowerContainer.classList.remove('hidden');
+                            flowerContainer.style.opacity = 0;
+                            
+                            setTimeout(() => { sndFlicker.play(); flowerContainer.style.opacity = 1; }, 100);
+                            
+                            setTimeout(() => {
+                                dialogueContainer.classList.remove('hidden');
+                                state.branch = 'narrator2';
+                                state.canInteract = true;
+                                nextPart2Step();
+                            }, 1000);
+                        }, 1000);
+                    } else if (state.branch === 'transitionToFinale') {
+                        dialogueContainer.classList.remove('glitch-dialogue');
+                        dialogueContainer.classList.add('hidden');
+                        flowerContainer.classList.add('hidden');
+                        sndFlicker.play();
+                        setTimeout(() => {
+                            document.body.classList.remove('part2-active-body');
+                            dialogueContainer.className = 'dialogue-box bordered';
+                            dialogueContainer.classList.remove('hidden');
+                            bgMusicPart2.play();
+                            state.branch = 'finale';
+                            state.canInteract = true;
+                            nextPart2Step();
+                        }, 2000);
+                    } else if (state.branch === 'end_part2') {
+                         returnToMainMenu();
+                    }
+                }
+                return;
+            }
+
+            const text = currentBranchData[state.dialogueIndex];
+            let config;
+            switch(state.branch) {
+                case 'narrator1': case 'narrator2': case 'finale':
+                    config = { speed: 50, soundPlayer: playSndTxt1 }; break;
+                case 'speaker':
+                    config = { speed: 50, soundPlayer: playRandomSpeakerSound }; break;
+                case 'glitch':
+                    config = { speed: 80, soundPlayer: null, mode: 'glitch' }; break;
+            }
+            typeText(text, config);
+            state.dialogueIndex++;
+        }
+        
+        function showPart2LockedMessage() {
+            state.mode = 'part2_locked'; state.dialogueIndex = 0;
+            dialogueContainer.classList.remove('hidden');
+            nextPart2LockedStep();
+        }
+
+        function nextPart2LockedStep() {
+            if (state.dialogueIndex >= part2LockedDialogue.length) { returnToMainMenu(); return; }
+            const text = part2LockedDialogue[state.dialogueIndex];
+            typeText(text, { speed: 50, soundPlayer: playSndTxt1 });
+            state.dialogueIndex++;
+        }
+
+        function showPart2GoodEndingPlaceholder() {
+            state.mode = 'part2_good_ending_placeholder'; state.dialogueIndex = 0;
+            dialogueContainer.classList.remove('hidden');
+            nextPart2GoodEndingPlaceholderStep();
+        }
+        
+        function nextPart2GoodEndingPlaceholderStep() {
+            if (state.dialogueIndex >= part2GoodEndingDialogue.length) { returnToMainMenu(); return; }
+            const text = part2GoodEndingDialogue[state.dialogueIndex];
+            typeText(text, { speed: 50, soundPlayer: playSndTxt1 });
+            state.dialogueIndex++;
+        }
+        
+        progressArrow.addEventListener('click', () => {
+            if (state.isTyping) { if (state.branch !== 'glitch') skipTyping(); return; }
+            if (!state.canInteract) return;
+
+            if (state.mode === 'part2_story') {
+                if (state.branch === 'speaker' && state.dialogueIndex === 3) { bgMusicPart2.play(); }
+                nextPart2Step();
+            } else if (state.mode === 'part2_locked') {
+                nextPart2LockedStep();
+            } else if (state.mode === 'part2_good_ending_placeholder') {
+                nextPart2GoodEndingPlaceholderStep();
+            }
+        });
+
+        window.onload = () => {
+            if (localStorage.getItem('badchoice')) {
+                startPart2();
+            } else if (localStorage.getItem('goodchoice')) {
+                showPart2GoodEndingPlaceholder();
+            } else {
+                showPart2LockedMessage();
+            }
+        };
+    </script>
+</body>
+</html>

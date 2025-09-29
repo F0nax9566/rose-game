@@ -1,0 +1,275 @@
+:root {
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Tiny5', monospace;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    text-align: center;
+}
+
+body.part2-active-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.hidden { display: none !important; }
+
+#mainMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#flowerContainer {
+    cursor: pointer;
+    transition: opacity 1s ease-in-out;
+    margin-bottom: 30px;
+}
+
+.part2-active-body #flowerContainer {
+    position: static;
+    transform: none;
+    margin-bottom: 0;
+    cursor: default;
+}
+
+#flowerImage { image-rendering: pixelated; }
+
+#menuButtons { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+/* Изменено для тега <a> */
+.menu-button { font-size: 32px; cursor: pointer; color: #fff; text-decoration: none; }
+.menu-button:hover { color: yellow; }
+
+#idleText {
+    margin-top: 20px;
+    font-size: 24px;
+    color: #555;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+}
+
+.dialogue-box {
+    width: 80%;
+    max-width: 600px;
+    min-height: 150px;
+    padding: 30px;
+    box-sizing: border-box;
+    transition: all 0.5s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.part2-active-body .dialogue-box {
+     position: relative;
+     top: auto;
+     left: auto;
+     transform: none;
+     width: 90%;
+     max-width: 800px;
+     min-height: auto;
+     padding: 20px;
+}
+
+.bordered {
+    border: 4px solid #fff;
+    background-color: #000;
+}
+.borderless { border: none; background-color: transparent; }
+.positioned-bottom { top: auto; bottom: 5%; left: 50%; transform: translateX(-50%); }
+
+.text-content {
+    font-size: 32px;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    width: 100%;
+    text-align: left;
+    max-height: 140px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+.text-content::-webkit-scrollbar { width: 10px; }
+.text-content::-webkit-scrollbar-track { background: transparent; }
+.text-content::-webkit-scrollbar-thumb { background: #fff; border: 2px solid #000; }
+
+.text-content span.levitate-char { display: inline-block; opacity: 0; animation: fadeInChar 0.5s forwards, levitate 4s ease-in-out infinite; }
+
+.text-content span.glitch-char {
+    display: inline-block;
+    animation: textTremble 0.2s steps(1, end) infinite;
+}
+
+.glitch-dialogue .text-content {
+    max-height: none;
+    overflow-y: hidden;
+    padding-right: 0;
+}
+
+#choiceContainer { margin-top: 20px; text-align: left; padding-left: 20px; }
+.choice-button { font-size: 32px; color: #fff; cursor: pointer; margin-right: 40px; opacity: 0; transition: opacity 1s; pointer-events: none; display: inline-block; }
+.choice-button:hover { color: yellow; }
+
+.choice-button.shake-on-hover:hover {
+    animation: tremble 1.5s ease-in-out infinite;
+}
+
+.positioned-bottom .text-content, .part2-active-body .text-content {
+    text-align: center;
+    padding-right: 0;
+    max-height: none;
+}
+.positioned-bottom #choiceContainer {
+    text-align: center;
+    padding-left: 0;
+}
+
+#skipButtonContainer {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 24px;
+    color: #777;
+    cursor: pointer;
+}
+#skipButton:hover { color: #ccc; }
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 100;
+}
+
+.scrollable-text { max-height: 40vh; overflow-y: auto; padding-right: 15px; text-align: left; font-size: 28px; line-height: 1.5; }
+.scrollable-text::-webkit-scrollbar { width: 10px; }
+.scrollable-text::-webkit-scrollbar-track { background: transparent; }
+.scrollable-text::-webkit-scrollbar-thumb { background: #fff; border: 2px solid #000; }
+#confirmationChoices { margin-top: 20px; }
+
+#resetConfirmationModal .scrollable-text {
+    max-height: 160px;
+}
+
+#progressArrow {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    width: 24px;
+    height: auto;
+    cursor: pointer;
+    image-rendering: pixelated;
+}
+.arrow-bobbing {
+    animation: bobbingArrow 1s ease-in-out infinite;
+}
+
+#choiceTreeButton {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-size: 24px;
+    color: #777;
+    cursor: pointer;
+    z-index: 50;
+}
+#choiceTreeButton:hover { color: #ccc; }
+
+#treeContent {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    text-align: left;
+    width: 100%;
+}
+.tree-part h3 {
+    font-size: 32px;
+    margin: 0 0 10px 0;
+    letter-spacing: 2px;
+}
+.tree-choice-item {
+     margin-left: 20px;
+}
+.tree-choice-title {
+    font-size: 28px;
+    cursor: pointer;
+}
+.tree-choice-title:hover {
+    color: yellow;
+}
+.tree-choice-desc {
+    font-size: 24px;
+    color: #aaa;
+    padding-left: 20px;
+    margin-top: 8px;
+    display: block;
+}
+.player-choice {
+    color: yellow;
+    text-decoration: underline;
+}
+#treeCloseButton {
+    margin-top: 30px;
+    font-size: 32px;
+    cursor: pointer;
+    text-align: center;
+}
+#treeCloseButton:hover { color: yellow; }
+.not-ready { color: #555; }
+
+#trueResetButton {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #555;
+    text-align: center;
+    color: #900;
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.2s ease-out;
+}
+#trueResetButton:hover { color: #f00; }
+
+#whiteoutOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 200;
+    transition: opacity 2s ease-in-out;
+}
+
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fadeInChar { from { opacity: 0; } to { opacity: 1; } }
+@keyframes levitate { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+@keyframes tremble {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    15% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+    30% { transform: translate(1px, -1px) rotate(0.5deg); }
+    45% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+    60% { transform: translate(1px, 1px) rotate(0.5deg); }
+    75% { transform: translate(-1px, 1px) rotate(0.5deg); }
+    90% { transform: translate(1px, -1px) rotate(-0.5deg); }
+}
+
+@keyframes textTremble {
+    0% { transform: translate(1px, -1px); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(2px, 2px); }
+    75% { transform: translate(1px, -2px); }
+    100% { transform: translate(-1px, 2px); }
+}
+
+@keyframes bobbingArrow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }

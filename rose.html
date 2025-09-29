@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="whiteoutOverlay"></div>
+
+    <div id="mainMenu">
+        <div id="flowerContainer">
+            <img id="flowerImage" src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="">
+        </div>
+        <div id="menuButtons">
+            <a href="part1.html" class="menu-button">часть один</a>
+            <a href="part2.html" class="menu-button">часть два</a>
+            <a href="part3.html" class="menu-button">часть три</a>
+        </div>
+        <div id="idleText">* (вода начинает сохнуть.)</div>
+    </div>
+    
+    <div id="choiceTreeButton">древо выборов</div>
+    
+    <div id="choiceTreeModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+            <div id="treeContent">
+                <div class="tree-part">
+                    <h3>Часть Один</h3>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoicePolyt">Полить</span>
+                        <span class="tree-choice-desc hidden">вы полили цветок, тем самым позволив ему прожить больше. кто если бы не вы?</span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceProsti">Прости</span>
+                        <span class="tree-choice-desc hidden">вы бросили цветок, посчитав что он вам не нужен.</span>
+                    </div>
+                </div>
+                 <div class="tree-part">
+                    <h3>Часть Два</h3>
+                    <div class="tree-choice-item not-ready">не готово</div>
+                </div>
+                <div class="tree-part">
+                    <h3>Часть Три</h3>
+                    <div class="tree-choice-item not-ready">не готово</div>
+                </div>
+            </div>
+            <div id="treeCloseButton">Назад</div>
+            <div id="trueResetButton">истинный сброс.</div>
+        </div>
+    </div>
+    
+    <div id="resetConfirmationModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+             <div class="scrollable-text" id="resetConfirmationText">
+                Это сбросит все ваши выборы. Крайне не советуется до полного прохождения, даже если следующая глава не вышла. продолжить?
+            </div>
+            <div id="resetChoices" style="text-align: center; margin-top: 20px;">
+                <span class="choice-button" id="resetConfirmYesButton" style="opacity: 1; pointer-events: auto;">Продолжить</span>
+                <span class="choice-button" id="resetConfirmNoButton" style="opacity: 1; pointer-events: auto;">Отмена</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const idleText = document.getElementById('idleText');
+        const choiceTreeButton = document.getElementById('choiceTreeButton');
+        const choiceTreeModal = document.getElementById('choiceTreeModal');
+        const treeCloseButton = document.getElementById('treeCloseButton');
+        const treeChoiceTitles = document.querySelectorAll('.tree-choice-title');
+        const trueResetButton = document.getElementById('trueResetButton');
+        const resetConfirmationModal = document.getElementById('resetConfirmationModal');
+        const resetConfirmYesButton = document.getElementById('resetConfirmYesButton');
+        const resetConfirmNoButton = document.getElementById('resetConfirmNoButton');
+        const whiteoutOverlay = document.getElementById('whiteoutOverlay');
+
+        const mainMenuMusic = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Faint%20Glow%20-%20Toby%20Fox.mp3");
+        mainMenuMusic.loop = true;
+        let isMusicStarted = false;
+        let idleTimer = null;
+
+        function tryStartMusic() {
+            if (isMusicStarted) return;
+            const playPromise = mainMenuMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => { isMusicStarted = true; })
+                         .catch(error => { console.log("Autoplay blocked. Click to start music."); });
+            }
+        }
+
+        function startIdleTimer() {
+            idleText.style.opacity = 0;
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => { idleText.style.opacity = 1; }, 10000);
+        }
+        
+        window.onload = () => {
+            tryStartMusic();
+            startIdleTimer();
+        };
+        document.body.addEventListener('click', tryStartMusic, { once: true });
+
+        choiceTreeButton.addEventListener('click', () => {
+            const polyt = document.getElementById('treeChoicePolyt');
+            const prosti = document.getElementById('treeChoiceProsti');
+            polyt.classList.remove('player-choice');
+            prosti.classList.remove('player-choice');
+            if (localStorage.getItem('goodchoice')) {
+                polyt.classList.add('player-choice');
+            } else if (localStorage.getItem('badchoice')) {
+                prosti.classList.add('player-choice');
+            }
+            document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
+            choiceTreeModal.classList.remove('hidden');
+        });
+
+        treeCloseButton.addEventListener('click', () => { choiceTreeModal.classList.add('hidden'); });
+        choiceTreeModal.addEventListener('click', (event) => { if (event.target === choiceTreeModal) { choiceTreeModal.classList.add('hidden'); } });
+
+        treeChoiceTitles.forEach(title => {
+            title.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const currentDesc = title.nextElementSibling;
+                const isHidden = currentDesc.classList.contains('hidden');
+                document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
+                if (isHidden) { currentDesc.classList.remove('hidden'); }
+            });
+        });
+
+        trueResetButton.addEventListener('click', () => {
+            choiceTreeModal.classList.add('hidden');
+            resetConfirmationModal.classList.remove('hidden');
+        });
+
+        resetConfirmNoButton.addEventListener('click', () => {
+            resetConfirmationModal.classList.add('hidden');
+            choiceTreeModal.classList.remove('hidden');
+        });
+        
+        resetConfirmYesButton.addEventListener('click', () => {
+            resetConfirmationModal.classList.add('hidden');
+            whiteoutOverlay.style.opacity = 1;
+            setTimeout(() => {
+                localStorage.removeItem('goodchoice');
+                localStorage.removeItem('badchoice');
+                localStorage.removeItem('replayIntroShown');
+                location.reload();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
