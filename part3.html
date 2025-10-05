@@ -110,7 +110,7 @@
         // Плавное затухание. Чтобы страдания уходили нежно, а не обрывались резко. Какая ирония.
         function fadeAudio(audio, onComplete) { const fadeDuration = 3000; const fadeInterval = 50; const volumeStep = audio.volume / (fadeDuration / fadeInterval); const fadeOut = setInterval(() => { if (audio.volume > volumeStep) { audio.volume -= volumeStep; } else { audio.volume = 0; audio.pause(); clearInterval(fadeOut); if (onComplete) onComplete(); } }, fadeInterval); }
         // Кнопка побега. Вернуться в главное меню, чтобы начать этот кошмар заново. Пожалуйста не надо.
-        function returnToMainMenu() { window.location.href = 'rose.html'; }
+        function returnToMainMenu() { window.location.href = 'index.html'; }
 
         // НАЧАЛО ОЧЕРЕДНОГО АКТА ЭТОЙ ПЬЕСЫ. Цепочка из setTimeout, как гирлянда на елке сумасшедшего. Дерни за одну ниточку - и все погаснет.
         function startTrueEndingSequence() { state.mode = 'true_ending'; sndDoor.play(); setTimeout(() => { sndFlicker.play(); flowerContainer.style.left = '50%'; flowerContainer.classList.remove('hidden'); bgMusicTrueEnding.play(); setTimeout(startTrueEndingIndependentText, 10000); }, 3000); }
@@ -207,3 +207,4 @@
     </script>
 </body>
 </html>
+
