@@ -1,75 +1,209 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <!-- ДА, Я ЗНАЮ ЧТО ЭТО HTML, СПАСИБО. -->
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Часть 3</title>
+    <title>Часть 3</title> <!-- Часть 3 чего? Страданий? Бессонных ночей? О да, определенно часть 3. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet"> <!-- Tiny5. Серьезно? Они что, для муравьев это делали? Какое же нелепое название. -->
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* А вот и доказательство моего падения. ХОТЬ РАЗ СУКА ИСПОЛЬЗУЙ STYLE.CSS ГОВНОЕД ТЫ ЖЕ ЕГО НЕ ПРОСТО ТАК СОЗДАЛ */
+        body { background-color: #000; color: #fff; font-family: 'Tiny5', sans-serif; overflow: hidden; }
+        .hidden { display: none !important; } /* !important. Кричу на браузер, чтобы он меня послушал. Так же, как я кричу в подушку по ночам. */
+
+        .flower-container { position: absolute; top: 15%; transform: translateX(-50%); transition: opacity 2s ease-in-out, left 1.5s ease-in-out; }
+        .flower-container img { display: block; image-rendering: pixelated; } /* О да, 'пиксельный рендеринг', потому что мы тут делаем ААА-игру, а не поделку на коленке. Самообман - великая вещь. */
+
+        .small-flower { transform: translateX(-50%) scale(0.5); }
+
+        .text-below-flower { top: 65%; }
+
+        #independentTextContainer { position: absolute; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: #fff; text-align: center; transition: opacity 2s ease-in-out; }
+        .text-in-center { top: 50%; }
+
+        .dialogue-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 800px; padding: 30px; text-align: left; font-size: 32px; transition: opacity 1.5s ease-in-out; }
+        .dialogue-bottom-layout { top: auto; bottom: 5%; } /* Какие-то классы-модификаторы. Я пытался быть умным. Пытался. */
+        .bordered { border: 4px solid #fff; }
+
+        #progressArrow { position: absolute; bottom: 15px; right: 20px; width: 24px; cursor: pointer; image-rendering: pixelated; }
+        .arrow-bobbing { animation: bobbingArrow 1s ease-in-out infinite; } /* Стрелочка ДЕРГАЕТСЯ. Как мой глаз, когда я смотрю на этот код. */
+
+        #finalChoiceContainer { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; transition: opacity 2s ease-in-out; }
+        .choice-button { font-size: 32px; color: #fff; cursor: pointer; opacity: 0; transition: opacity 1s; pointer-events: none; }
+        .choice-button:hover { color: yellow; } /* Желтый при наведении. ВЕРШИНА ДИЗАЙНА. Просто дайте мне уже все награды мира. */
+
+        @keyframes bobbingArrow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+
+        @media (max-width: 600px) {
+            /* Адаптивность. Какая забота. Наверное, у меня тогда было хорошее настроение. Не помню такого. Я даже подумал о людях с телефонами и Артеме. Интересно, кто милее? Ответ очевиден. */
+            #independentTextContainer { font-size: 40px; }
+            .dialogue-box { font-size: 28px; }
+            #finalChoiceContainer { flex-direction: column; gap: 20px; bottom: 10%; }
+            .choice-button { font-size: 28px; }
+        }
+    </style>
 </head>
 <body>
-    <div id="dialogueContainer" class="dialogue-box bordered">
-        <div class="text-content" id="textContent"></div>
-        <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="progressArrow">
+    <!-- Вот они, мои актеры. Кучка div'ов, которые ждут, пока JavaScript дернет за ниточки. Жалкое зрелище. -->
+    <div id="flowerContainer" class="hidden flower-container">
+         <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="Роза">
     </div>
-    
+    <div id="flowerContainer2" class="hidden flower-container">
+         <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="Роза 2">
+    </div>
+
+    <div id="dialogueContainer" class="dialogue-box bordered hidden">
+        <div class="text-content" id="textContent"></div>
+        <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="progressArrow" class="hidden">
+    </div>
+
+    <div id="independentTextContainer" class="hidden"></div>
+    <div id="finalChoiceContainer" class="hidden"></div>
+
     <script>
+        // Ну что, началось. Сейчас будет больно. Пристегнись.
+
+        // ХВАТАЕМ ВСЕ ПОДРЯД. getElementById, getElementById... будто я граблю этот DOM, а не работаю с ним. Сколько можно?
+        const flowerContainer = document.getElementById('flowerContainer');
+        const flowerContainer2 = document.getElementById('flowerContainer2');
+        const dialogueContainer = document.getElementById('dialogueContainer');
         const textContent = document.getElementById('textContent');
         const progressArrow = document.getElementById('progressArrow');
+        const independentTextContainer = document.getElementById('independentTextContainer');
+        const finalChoiceContainer = document.getElementById('finalChoiceContainer');
+
+        // Целый оркестр звуков. Кто-нибудь вообще проверял, загружаются ли они? Или мы просто надеемся на чудо? НАДЕЖДА - ЭТО НЕ СТРАТЕГИЯ.
+        const sndFlicker = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/flicker.wav");
+        const sndTxt1 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/snd_txt1.wav");
         const speakerSounds = [ new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav"), new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav") ];
-        const placeholderDialogue = [ "* извините, страница в разработке!", "* и нет, это точно не потому что фонакс наелся кляра и откинулся." ];
-        
-        let dialogueIndex = 0;
-        let isTyping = false;
-        let typingTimeout = null;
-        let canInteract = true;
+        const sndDoor = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/door.wav");
+        const bgMusicTrueEnding = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/His%20Theme%20-%20Toby%20Fox.mp3");
+        bgMusicTrueEnding.loop = true; bgMusicTrueEnding.volume = 0.5; // Зациклить музыку. Чтобы она сводила с ума вечно. Очень символично.
+        const bgMusicRedemption = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/An%20Ending%20-%20Toby%20Fox.mp3");
+        bgMusicRedemption.loop = true; bgMusicRedemption.volume = 0.5;
 
+        // О, великая литература. Хардкодить диалоги прямо в скрипте – гениальное решение. JSON? Зачем, если можно устроить свалку прямо здесь.
+        const trueEndingDialogues = ["* (Видя, что то, о чем вы заботились...)", "* (То, чего вы так сильно хотели...)", "* (Видя, что мечта из вашей глубины души сбылась...)", "* (Вы наполняетесь определенной силой.)", "* (Вы ждали этого момента.)", "* (Вы знали... Вы знали что это было не зря.)", "* (...И в конце концов, вы всё-таки нашли покой...)", "* (...Может и не идеальный, но...)", "* (...Всё ещё покой.)"];
+        const redemptionDialogues = ["* (За время, пока вас не было, семечко, которое вы полили, всё-таки пустило корни и с него вырос маленький цветок.)", "* (Но...)", "* (Около него вырос ещё один.)", "* (Они находятся слишком близко чтобы принимать воду по отдельности.)", "* Что-ж, я понимаю твоё недоумение...", "* Но всё можно исправить.", "* (Вы получили лопату и лейку)", "* Делай что считаешь нужным.", "* А я, пожалуй... понаблюдаю."];
+        const defaultDialogues = ["* Вы протянули руку к двери, но она застыла.", "* Может быть стоит немного подождать?"];
+        const detachEndingDialogues = ["* (Вы вскопали второй цветок, пересадив его в другое место)", "* Ясно...", "* Ты думаешь только о своем цветке?", "* В любом случае кто я такой, чтобы решать за тебя?"];
+        const shareEndingDialogues = ["* (Вы полили место сплетения двух цветков)", "* (Вы почувствовали облегчение.)"];
+        const postShareDialogues = ["* (Двери были заблокированы большими лозами...)", "* (Вы... различаете парочку из них.)"];
+        const postFavoriteDialogues = ["* (Двери были заблокированы большими лозами...)", "* (Вы остановились чтобы задуматься.)"];
+        const postTrueEndingDialogues = ["* (Вы подумали о том, что могло произойти если бы не вы.)", "* (...Вы почувствовали страх.)"];
+        const postTrueMonsterDialogues = ["* (Вы подумали о том, что могло произойти если бы не вы.)", "* (...Вы почувствовали извращённое удовольствие.)"];
+
+        // А вот и мозг всей операции. Жалкий маленький объект, который думает, что он все контролирует. ОДНА ошибка здесь, и все рухнет. ВСЕ СУКА.
+        let state = { mode: '', isTyping: false, canInteract: true, typingTimeout: null, currentText: "", dialogueIndex: 0, currentDialogues: [] };
+
+        // Моя 'гениальная' функция печатания текста. setTimeout внутри рекурсии. Это не красиво, это, сука, безумие. Карточный домик из таймеров.
+        function typeText(text, config) { state.isTyping = true; state.canInteract = false; state.currentText = text; textContent.innerHTML = ''; progressArrow.classList.remove('hidden', 'arrow-bobbing'); let charIndex = 0; function typeChar() { if (charIndex < text.length) { textContent.innerHTML += text.charAt(charIndex); if (config.soundPlayer && text.charAt(charIndex) !== ' ' && text.charAt(charIndex) !== '*') config.soundPlayer(); charIndex++; let delay = 50; if ((text.charAt(charIndex-1) === '.' || text.charAt(charIndex-1) === ',') && text.charAt(charIndex) !== '(') { delay += 300; } state.typingTimeout = setTimeout(typeChar, delay); } else { state.isTyping = false; state.canInteract = true; progressArrow.classList.add('arrow-bobbing'); } } typeChar(); }
+        // ЕЩЕ ОДНА такая же функция. Потому что одной было мало. Я явно наслаждался страданиями, когда копипастил это. Кто знает, может внутри я мазохист? Если да - пожалуйста ударьте меня так сильно, что я больше не сяду за этот код.
+        function typeTextToElement(element, text, config) { clearTimeout(state.typingTimeout); element.innerHTML = ''; let charIndex = 0; function typeChar() { if (charIndex < text.length) { element.innerHTML += text.charAt(charIndex); if (config.soundPlayer && text.charAt(charIndex) !== ' ') config.soundPlayer(); charIndex++; state.typingTimeout = setTimeout(typeChar, 100); } else { if (config.onComplete) config.onComplete(); } } typeChar(); }
+        // Для нетерпеливых. Которые хотят поскорее увидеть конец этого страдания. Я их понимаю.
+        function skipTyping() { if (!state.isTyping) return; clearTimeout(state.typingTimeout); state.isTyping = false; state.canInteract = true; textContent.innerHTML = state.currentText; progressArrow.classList.add('arrow-bobbing'); }
+        // Функции для проигрывания звуков. Каждая - маленький гвоздь в крышку гроба моей производительности.
         function playRandomSpeakerSound() { const sound = speakerSounds[Math.floor(Math.random() * speakerSounds.length)]; sound.currentTime = 0; sound.play(); }
-        
-        function typeText(text, config) {
-            isTyping = true; canInteract = false;
-            textContent.innerHTML = '';
-            progressArrow.classList.remove('arrow-bobbing');
-            let charIndex = 0;
-            function typeChar() {
-                if (charIndex < text.length) {
-                    const char = text.charAt(charIndex);
-                    textContent.innerHTML += char;
-                    if (config.soundPlayer && char !== ' ' && char !== '*') config.soundPlayer();
-                    charIndex++;
-                    let delay = config.speed;
-                    if ((char === '.' || char === ',') && text.charAt(charIndex) !== '(' && text.charAt(charIndex) !== ')') { 
-                        delay += 300; 
-                    }
-                    typingTimeout = setTimeout(typeChar, delay);
-                } else {
-                    isTyping = false;
-                    canInteract = true;
-                    progressArrow.classList.add('arrow-bobbing');
-                }
-            }
-            typeChar();
+        function playSndTxt1() { sndTxt1.currentTime = 0; sndTxt1.play(); }
+        // Плавное затухание. Чтобы страдания уходили нежно, а не обрывались резко. Какая ирония.
+        function fadeAudio(audio, onComplete) { const fadeDuration = 3000; const fadeInterval = 50; const volumeStep = audio.volume / (fadeDuration / fadeInterval); const fadeOut = setInterval(() => { if (audio.volume > volumeStep) { audio.volume -= volumeStep; } else { audio.volume = 0; audio.pause(); clearInterval(fadeOut); if (onComplete) onComplete(); } }, fadeInterval); }
+        // Кнопка побега. Вернуться в главное меню, чтобы начать этот кошмар заново. Пожалуйста не надо.
+        function returnToMainMenu() { window.location.href = 'rose.html'; }
+
+        // НАЧАЛО ОЧЕРЕДНОГО АКТА ЭТОЙ ПЬЕСЫ. Цепочка из setTimeout, как гирлянда на елке сумасшедшего. Дерни за одну ниточку - и все погаснет.
+        function startTrueEndingSequence() { state.mode = 'true_ending'; sndDoor.play(); setTimeout(() => { sndFlicker.play(); flowerContainer.style.left = '50%'; flowerContainer.classList.remove('hidden'); bgMusicTrueEnding.play(); setTimeout(startTrueEndingIndependentText, 10000); }, 3000); }
+        function startTrueEndingIndependentText() { independentTextContainer.classList.add('text-below-flower'); independentTextContainer.classList.remove('hidden'); const texts = [ { text: "ты вырастил его.", sound: null, delay: 3000 }, { text: "тебе нравится... тебе нравится результат?", sound: null, delay: 3000 }, { text: "возможно это было зря, но...", sound: null, delay: 3000 }, { text: "он... выглядит красиво в конце концов.", sound: null, delay: 3000 }, { text: "пожалуйста, не... не переставай заботится о нем.", sound: null, delay: 3000 }, { text: "...", sound: null, delay: 3000 }, { text: "я...", sound: null, delay: 3000 }, { text: "я рад что ты смог найти покой.", sound: playRandomSpeakerSound, delay: 3000 } ]; let currentIndex = 0; function typeNext() { if (currentIndex >= texts.length) { fadeFlowerAndStartTrueEndingDialogue(); return; } const current = texts[currentIndex]; typeTextToElement(independentTextContainer, current.text, { soundPlayer: current.sound, onComplete: () => { setTimeout(() => { currentIndex++; typeNext(); }, current.delay); } }); } typeNext(); }
+        function fadeFlowerAndStartTrueEndingDialogue() { flowerContainer.style.opacity = '0'; independentTextContainer.style.opacity = '0'; setTimeout(() => { flowerContainer.classList.add('hidden'); independentTextContainer.classList.add('hidden'); dialogueContainer.classList.remove('hidden'); nextTrueEndingDialogue(); }, 5000); }
+        function nextTrueEndingDialogue() { if (state.dialogueIndex >= trueEndingDialogues.length) { startFinalMessageSequence(); return; } const text = trueEndingDialogues[state.dialogueIndex]; typeText(text, { soundPlayer: playSndTxt1 }); state.dialogueIndex++; }
+        function startFinalMessageSequence() { state.canInteract = false; dialogueContainer.style.opacity = '0'; setTimeout(() => { dialogueContainer.classList.add('hidden'); independentTextContainer.className = 'text-in-center'; independentTextContainer.style.opacity = '1'; independentTextContainer.classList.remove('hidden'); typeTextToElement(independentTextContainer, "Продолжение... Следует?", { soundPlayer: null, onComplete: () => { setTimeout(() => { typeTextToElement(independentTextContainer, "...", { soundPlayer: null, onComplete: () => { setTimeout(() => { typeTextToElement(independentTextContainer, "Нет. Оставим его в покое.", { soundPlayer: null, onComplete: () => { localStorage.setItem('trueending', 'true'); localStorage.setItem('trueendingcomplete', 'true'); setTimeout(() => { independentTextContainer.style.opacity = '0'; fadeAudio(bgMusicTrueEnding, () => setTimeout(returnToMainMenu, 500)); }, 3000); } }); }, 3000); } }); }, 3000); } }); }, 3000); }
+
+        // Еще одна ветка сюжета. Еще одна порция спагетти-кода. Я просто обожаю свою работу.
+        function startRedemptionSequence() { state.mode = 'redemption'; sndDoor.play(); setTimeout(() => { sndFlicker.play(); flowerContainer.classList.add('small-flower'); flowerContainer2.classList.add('small-flower'); flowerContainer.style.left = '50%'; flowerContainer.classList.remove('hidden'); bgMusicRedemption.play(); setTimeout(() => { dialogueContainer.classList.add('dialogue-bottom-layout'); dialogueContainer.classList.remove('hidden'); nextRedemptionDialogue(); }, 3000); }, 3000); }
+        function nextRedemptionDialogue() { if (state.dialogueIndex >= redemptionDialogues.length) { showRedemptionChoices(); return; } if (state.dialogueIndex === 2) { flowerContainer.style.left = '45%'; flowerContainer2.style.left = '55%'; flowerContainer2.classList.remove('hidden'); } const text = redemptionDialogues[state.dialogueIndex]; let soundPlayer = playSndTxt1; if ([4, 5, 7, 8].includes(state.dialogueIndex)) { soundPlayer = playRandomSpeakerSound; } typeText(text, { soundPlayer }); state.dialogueIndex++; }
+        function showRedemptionChoices() { state.canInteract = false; dialogueContainer.style.opacity = '0'; setTimeout(() => { dialogueContainer.classList.add('hidden'); independentTextContainer.className = 'text-in-center'; independentTextContainer.classList.remove('hidden'); typeTextToElement(independentTextContainer, "что?", { onComplete: () => { finalChoiceContainer.classList.remove('hidden'); const choices = { "полить": handleChoiceShare, "отсоединить": handleChoiceDetach }; for (const choiceText in choices) { const button = document.createElement('span'); button.textContent = choiceText; button.className = 'choice-button'; if (choices[choiceText]) button.onclick = choices[choiceText]; finalChoiceContainer.appendChild(button); setTimeout(() => { button.style.opacity = '1'; button.style.pointerEvents = 'auto'; }, 500); } state.canInteract = true; } }); }, 2000); }
+
+        // Выбор без выбора. Куда бы ты ни нажал, ты все равно идешь по рельсам, которые проложил Я-из-прошлого. Какой же я был наивный идиот.
+        function handleChoiceDetach() { if (!state.canInteract) return; state.canInteract = false; localStorage.setItem('redemptionfavorite', 'true'); localStorage.setItem('redemptionfavoritecomplete', 'true'); flowerContainer.style.opacity = '0'; flowerContainer2.style.opacity = '0'; independentTextContainer.style.opacity = '0'; finalChoiceContainer.style.opacity = '0'; setTimeout(() => { flowerContainer.classList.add('hidden'); flowerContainer2.classList.add('hidden'); independentTextContainer.classList.add('hidden'); finalChoiceContainer.classList.add('hidden'); setTimeout(() => { sndFlicker.play(); setTimeout(() => { state.mode = 'detach_ending'; state.dialogueIndex = 0; dialogueContainer.classList.remove('dialogue-bottom-layout'); dialogueContainer.style.opacity = '1'; dialogueContainer.classList.remove('hidden'); nextDetachDialogue(); }, 1000); }, 2000); }, 2000); }
+        function nextDetachDialogue() { if (state.dialogueIndex >= detachEndingDialogues.length) { dialogueContainer.style.opacity = '0'; fadeAudio(bgMusicRedemption, returnToMainMenu); return; } const text = detachEndingDialogues[state.dialogueIndex]; const soundPlayer = (state.dialogueIndex === 0) ? playSndTxt1 : playRandomSpeakerSound; typeText(text, { soundPlayer }); state.dialogueIndex++; }
+
+        // И еще одна функция-обработчик. Они плодятся как чурки. А я просто сижу и смотрю на этот зоопарк.
+        function handleChoiceShare() { if (!state.canInteract) return; state.canInteract = false; localStorage.setItem('redemptionshare', 'true'); localStorage.setItem('redemptionsharecomplete', 'true'); flowerContainer.style.opacity = '0'; flowerContainer2.style.opacity = '0'; independentTextContainer.style.opacity = '0'; finalChoiceContainer.style.opacity = '0'; setTimeout(() => { flowerContainer.classList.add('hidden'); flowerContainer2.classList.add('hidden'); independentTextContainer.classList.add('hidden'); finalChoiceContainer.classList.add('hidden'); setTimeout(() => { sndFlicker.play(); setTimeout(() => { state.mode = 'share_ending'; state.dialogueIndex = 0; dialogueContainer.classList.remove('dialogue-bottom-layout'); dialogueContainer.style.opacity = '1'; dialogueContainer.classList.remove('hidden'); nextShareDialogue(); }, 500); }, 1000); }, 2000); }
+        function nextShareDialogue() { if (state.dialogueIndex >= shareEndingDialogues.length) { startShareIndependentText(); return; } const text = shareEndingDialogues[state.dialogueIndex]; typeText(text, { soundPlayer: playSndTxt1 }); state.dialogueIndex++; }
+        function startShareIndependentText() { state.canInteract = false; dialogueContainer.style.opacity = '0'; setTimeout(() => { dialogueContainer.classList.add('hidden'); independentTextContainer.className = 'text-in-center'; independentTextContainer.style.opacity = '1'; independentTextContainer.classList.remove('hidden'); typeTextToElement(independentTextContainer, "Так ты не против?", { soundPlayer: playRandomSpeakerSound, onComplete: () => { setTimeout(() => { typeTextToElement(independentTextContainer, "Превосходно... Поистине превосходно.", { soundPlayer: playRandomSpeakerSound, onComplete: () => { setTimeout(() => { independentTextContainer.style.opacity = '0'; fadeAudio(bgMusicRedemption, returnToMainMenu); }, 3000); } }); }, 3000); } }); }, 2000); }
+
+        // А это для тех, кто не заслужил "хорошую" концовку. Заглушка. Как и моя мотивация.
+        function startDefaultSequence() { state.mode = 'default'; dialogueContainer.classList.remove('hidden'); nextDefaultDialogue(); }
+        function nextDefaultDialogue() { if (state.dialogueIndex >= defaultDialogues.length) { setTimeout(returnToMainMenu, 2000); return; } const text = defaultDialogues[state.dialogueIndex]; typeText(text, { soundPlayer: playSndTxt1 }); state.dialogueIndex++; }
+
+        // Очередная попытка сделать что-то универсальное, которая превратилась в еще один костыль.
+        function startPostEndingDialogue(dialogues) {
+            state.mode = 'post_ending';
+            state.dialogueIndex = 0;
+            state.currentDialogues = dialogues;
+            dialogueContainer.classList.remove('hidden');
+            nextPostEndingDialogue();
         }
 
-        function returnToMainMenu() {
-            window.location.href = 'rose.html';
-        }
-
-        function nextPlaceholderStep() {
-            if (!canInteract) return;
-            if (dialogueIndex >= placeholderDialogue.length) {
+        function nextPostEndingDialogue() {
+            if (state.dialogueIndex >= state.currentDialogues.length) {
+                // ВСЕ, ХВАТИТ. Возвращаемся в меню. Не могу больше это видеть.
                 returnToMainMenu();
                 return;
             }
-            const text = placeholderDialogue[dialogueIndex];
-            typeText(text, { speed: 50, soundPlayer: playRandomSpeakerSound });
-            dialogueIndex++;
+            const text = state.currentDialogues[state.dialogueIndex];
+            typeText(text, { soundPlayer: playSndTxt1 });
+            state.dialogueIndex++;
         }
 
-        window.onload = nextPlaceholderStep;
-        progressArrow.addEventListener('click', nextPlaceholderStep);
+        // Великий и ужасный обработчик кликов. Одна кнопка, чтобы править ими всеми. И чтобы сломать все, если я что-то поменяю.
+        progressArrow.addEventListener('click', () => { 
+            if (state.isTyping) { 
+                skipTyping(); 
+                return; 
+            } 
+            if (!state.canInteract) { 
+                return; 
+            } 
+            // switch-case... когда-то я думал, что это круто и организованно. Теперь я вижу в этом только отчаяние.
+            switch(state.mode) { 
+                case 'true_ending': nextTrueEndingDialogue(); break; 
+                case 'redemption': nextRedemptionDialogue(); break; 
+                case 'detach_ending': nextDetachDialogue(); break; 
+                case 'share_ending': nextShareDialogue(); break;
+                case 'post_ending': nextPostEndingDialogue(); break;
+                case 'default': nextDefaultDialogue(); break; 
+            } 
+        });
+
+        // ГЛАВНЫЙ РАСПРЕДЕЛИТЕЛЬ СУДЕБ. Эта мешанина из if-else, копающаяся в localStorage как свинья в грязи. 'А что если у игрока вот это?', 'А что если то?'. Ужас. Просто ужас. Убейте меня. Я ничему не учусь.
+        window.onload = () => { 
+
+            if (localStorage.getItem('trueending') === 'true' && localStorage.getItem('monstercomplete') === 'true') {
+                startPostEndingDialogue(postTrueMonsterDialogues);
+            } 
+
+            else if (localStorage.getItem('trueending') === 'true') {
+                startPostEndingDialogue(postTrueEndingDialogues);
+            }
+
+            else if (localStorage.getItem('redemptionshare') === 'true') {
+                startPostEndingDialogue(postShareDialogues);
+            }
+
+            else if (localStorage.getItem('redemptionfavorite') === 'true') {
+                startPostEndingDialogue(postFavoriteDialogues);
+            }
+
+            else if (localStorage.getItem('graincontinue') === 'true') { 
+                startTrueEndingSequence(); 
+            } else if (localStorage.getItem('watergrainsorry') === 'true') { 
+                startRedemptionSequence(); 
+            } else { 
+                startDefaultSequence(); 
+            } 
+        };
     </script>
 </body>
 </html>
