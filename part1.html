@@ -33,8 +33,9 @@
             </div>
         </div>
     </div>
-    
+
     <script>
+        // Клянусь, если я увижу еще один getElementById, я начну выдирать себе волосы. Неужели так сложно было использовать какой-нибудь фреймворк? Нет, мы будем делать всё на ванильном JS, как пещерные люди. Нет, я не перестану оскорблять себя.
         const flowerContainer = document.getElementById('flowerContainer');
         const dialogueContainer = document.getElementById('dialogueContainer');
         const textContent = document.getElementById('textContent');
@@ -45,7 +46,8 @@
         const confirmationModal = document.getElementById('confirmationModal');
         const confirmYesButton = document.getElementById('confirmYesButton');
         const confirmNoButton = document.getElementById('confirmNoButton');
-        
+
+        // Вот этот зоопарк из new Audio() - моя личная головная боль. Каждый раз, когда страница грузится, я молюсь, чтобы гитхаб не отвалился и все эти звуки прогрузились. А если у пользователя интернет медленный? Что-ж...
         const sndFlicker = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/flicker.wav");
         const sndTxt1 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/snd_txt1.wav");
         const sndDoor = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/door.wav");
@@ -54,6 +56,7 @@
         const speakerSounds = [ new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav"), new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav") ];
         const sndTxt2 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/2.wav");
 
+        // Я не знаю, какой гений решил позволить мне захардкодить все диалоги в один гигантский объект, но я хочу пожать ему горло. Это же невозможно поддерживать! Одна опечатка - и всё летит к херам.
         const storyDialogues = {
             rose: ["* (Кто-то заботливо полил цветок.)", "* (Цветок пахнет очень знакомо.)"],
             speaker: [ "* Эй.. тут кто-нибудь есть?", "* ...", "* Так ты всё-таки решил прийти сюда, хм?", "* Тебе стоило поливать его чаще, он.. был на грани.", "* Но это не так важно.", "* ...", "* Хех, а ведь правду говорят...", "* От судьбы не убежишь.", "* ...", "* Ты улыбаешься?", "* Ха... ха...", "* Похоже ты не зря его растил.", "* ...", "* Мне... жаль что я так поступил с тобой.", "* Просто постарайся меньше думать об этом, окей?" ],
@@ -64,6 +67,7 @@
         const replayIntroDialogues = [ "* (Прошлое не вернуть.)", "* (Но вы всёравно хотите что-то изменить...)", "* (В любом случае власть в ваших руках, и это вас радует.)", "* Ненадолго." ];
         const easterEggDialogue = [ "* Если ты читаешь это то ты руина.", "* Из всех возможных багов на сайте ты нашел только этот?", "* Думаешь самый умный?", "* Да, мне было легче написать диалог чем исправить этот баг, заставив кнопку пропасть во время проигрывания звука двери.", "* А теперь проваливай" ];
 
+        // Вот он. Источник всех моих страданий... "state". Глобальный объект состояния. Один неверный чих, и он превращается в говно, а я потом сижу до 3 ночи и ищу, где я забыл поменять какой-нибудь isTyping на false.
         let state = {
             mode: 'story', branch: 'start', dialogueIndex: 0, 
             isTyping: false, canInteract: true, typingTimeout: null, currentText: ""
@@ -71,6 +75,7 @@
         let savedState = {};
         let doorSoundTimeout = null;
 
+        // О БОЖЕ, ЭТА ФУНКЦИЯ. Слушай. Серьезно, кто пишет такой ад? КОНЕЧНО ЖЕ Я! setTimeout внутри рекурсивной функции, чтобы печатать по буковке? А еще и со звуком на КАЖДЫЙ СИМВОЛ? Да это же билет в один конец до лагадрома. Я потратил на отладку этого монстра больше времени, чем на сон в последнюю неделю. Ненавижу.
         function typeText(text, config) {
             state.isTyping = true; state.canInteract = false; state.currentText = text;
             textContent.innerHTML = ''; choiceContainer.innerHTML = ''; 
@@ -116,6 +121,7 @@
             typeChar();
         }
 
+        // А вот и костыль для предыдущего чудовища. Вместо того чтобы сделать typeText нормальной, мы просто добавили кнопку "сломай всё к чертям и покажи текст сразу". Классика. Иногда мне кажется, что я сам себе злейший враг.
         function skipTyping() { 
             if (!state.isTyping) return; 
             clearTimeout(state.typingTimeout); 
@@ -125,10 +131,11 @@
             progressArrow.classList.add('arrow-bobbing'); 
         }
 
+        // Вот эти три строчки кода существуют только потому, что мне было лень передавать звук как аргумент. Вместо этого я создал три почти одинаковые функции. Застрелите меня.
         function playRandomSpeakerSound() { const sound = speakerSounds[Math.floor(Math.random() * speakerSounds.length)]; sound.currentTime = 0; sound.play(); }
         function playSndTxt1() { sndTxt1.currentTime = 0; sndTxt1.play(); }
         function playSndTxt2() { sndTxt2.currentTime = 0; sndTxt2.play(); }
-        
+
         function returnToMainMenu() {
             window.location.href = 'rose.html';
         }
@@ -138,9 +145,10 @@
             document.body.appendChild(flowerContainer);
             flowerContainer.classList.remove('hidden');
             flowerContainer.style.opacity = 0;
+            // Этот setTimeout на 500мс - это просто магия. Почему 500? Потому что! Никто не знает, это просто "выглядит лучше". Если поменять на 499, вселенная схлопнется. Иди нахер.
             setTimeout(() => { dialogueContainer.classList.remove('hidden'); state.canInteract = true; nextStoryStep(); }, 500);
         }
-        
+
         function startReplayIntro() {
             localStorage.setItem('replayIntroShown', 'true');
             state.mode = 'replay_intro'; state.dialogueIndex = 0;
@@ -157,6 +165,7 @@
             state.dialogueIndex++;
         }
 
+        // Вот это - сердце нашего монстра. Функция, которая решает, что делать дальше. Она дергает другие функции, которые дергают ее, и так по кругу. Это не код, это клубок змей которые уже попытались откусить мне хер раз так 20. Спасибо.
         function nextStoryStep() {
             if (!state.canInteract) return;
             if (state.branch !== 'choice' && state.branch !== 'finale_yes' && state.branch !== 'finale_no') { skipButtonContainer.classList.remove('hidden'); }
@@ -171,36 +180,61 @@
             typeText(text, { speed: 50, soundPlayer: state.branch === 'rose' ? playSndTxt1 : playRandomSpeakerSound });
             state.dialogueIndex++;
         }
-        
+
+        // О БОЖЕ ЭТО ЕЩЁ ХУЖЕ. Сука. Это функция-разводящий, которая в зависимости от ветки сюжета вызывает... другую функцию. Зачем это вообще отдельная функция?! Чтобы добавить еще один слой бессмысленной сложности. Я гений.
         function handleStoryBranchTransition() { 
             if (state.branch === 'speaker') { nextStoryStep(); } 
             else if (state.branch === 'choice') { skipButtonContainer.classList.add('hidden'); runChoiceSequence(); } 
             else if (state.branch === 'end_yes' || state.branch === 'end_no') { returnToMainMenu(); }
         }
 
+        // Я называю это "пирамида ужаса". Два вложенных setTimeout. Это называется "callback hell", и я сгорел в нем уже раз десять. Сначала ждем полсекунды, потом полторы. Почему? Да хер его знает, так красивее было.
         function runChoiceSequence() { state.canInteract = false; sndFlicker.play(); dialogueContainer.classList.add('hidden'); flowerContainer.classList.remove('hidden'); setTimeout(() => { sndFlicker.play(); flowerContainer.style.opacity = 1; }, 500); setTimeout(() => { dialogueContainer.className = "dialogue-box bordered positioned-bottom"; dialogueContainer.classList.remove('hidden'); progressArrow.classList.add('hidden'); typeText(storyDialogues.choice, { speed: 100, mode: 'levitate', onComplete: showChoices, showArrow: false }); }, 1500); }
-        function showChoices() { const choices = ["Полить", "Прости"]; choices.forEach((choiceText, index) => { const button = document.createElement('span'); button.textContent = choiceText; button.className = 'choice-button shake-on-hover'; button.onclick = (event) => { event.stopPropagation(); (choiceText === "Полить" ? handleChoiceYes() : handleChoiceNo()); }; choiceContainer.appendChild(button); setTimeout(() => { button.style.opacity = 1; button.style.pointerEvents = 'auto'; }, 500 * (index + 1)); }); state.canInteract = false; }
         
+        // Эта функция создает две кнопки. Но не просто создает, а с задержкой в полсекунды! Чтобы выглядело "драматично". На деле это просто еще один асинхронный кошмар, который ломается, если пользователь кликнет куда-то не туда в нужный момент. Убейте меня.
+        function showChoices() { const choices = ["Полить", "Прости"]; choices.forEach((choiceText, index) => { const button = document.createElement('span'); button.textContent = choiceText; button.className = 'choice-button shake-on-hover'; button.onclick = (event) => { event.stopPropagation(); (choiceText === "Полить" ? handleChoiceYes() : handleChoiceNo()); }; choiceContainer.appendChild(button); setTimeout(() => { button.style.opacity = 1; button.style.pointerEvents = 'auto'; }, 500 * (index + 1)); }); state.canInteract = false; }
+
+        // СУКА Я ЩАС СОЙДУ С УМА. Посмотри на этот коллбэк внутри коллбэка. setTimeout, внутри которого еще один setTimeout. Это преступление против программирования. Я должен был стать шахматистом, а не вот этим вот всем заниматься.
         function handleChoiceYes() {
             if (!localStorage.getItem('goodchoice') && !localStorage.getItem('badchoice')) { localStorage.setItem('goodchoice', 'true'); }
+            localStorage.setItem('goodchoicecomplete', 'true'); 
             state.canInteract = false; choiceContainer.innerHTML = ''; textContent.innerHTML = ''; state.branch = 'finale_yes'; dialogueContainer.classList.remove('positioned-bottom'); dialogueContainer.classList.add('bordered'); dialogueContainer.classList.remove('borderless'); typeText(storyDialogues.finale_yes[0], { speed: 50, soundPlayer: playRandomSpeakerSound, onComplete: () => { state.canInteract = false; setTimeout(() => { flowerContainer.style.animation = 'fadeOut 2s forwards'; dialogueContainer.classList.add('hidden'); progressArrow.classList.add('hidden'); setTimeout(() => { dialogueContainer.classList.remove('hidden'); state.dialogueIndex = 1; fadeOutMusic(); state.canInteract = true; nextStoryStep(); }, 3000); }, 2000); } }); 
         }
 
+        // О, а вот и злой брат-близнец предыдущей функции. Мог ли я сделать одну универсальную функцию для обработки выбора? Конечно. Сделал ли я это? Посмотри на этот код и спроси еще раз. Я просто скопипастил handleChoiceYes и поменял пару строк. Эффективность? Пошла она нахер.
         function handleChoiceNo() {
-            if (!localStorage.getItem('goodchoice') && !localStorage.getItem('badchoice')) { localStorage.setItem('badchoice', 'true'); }
+            choiceContainer.innerHTML = '';
+            textContent.innerHTML = '';
+            if (!localStorage.getItem('goodchoice') && !localStorage.getItem('badchoice')) {
+                localStorage.setItem('badchoice', 'true');
+            }
+            localStorage.setItem('part1badendingcomplete', 'true');
             state.canInteract = false;
-            bgMusic.pause(); bgMusic.currentTime = 0;
+
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+
             dialogueContainer.classList.add('hidden');
             flowerContainer.classList.add('hidden');
-            setTimeout(returnToMainMenu, 1500);
+
+            setTimeout(() => {
+                dialogueContainer.className = 'dialogue-box bordered'; 
+                dialogueContainer.classList.remove('hidden');
+                state.branch = 'finale_no';
+                state.dialogueIndex = 0;
+                state.canInteract = true; 
+                nextStoryStep();
+            }, 3000);
         }
 
+        // Я даже не хочу это комментировать. setInterval, чтобы плавно уменьшать громкость. Это звучит как хорошая идея, пока ты не забудешь его очистить и он будет вечно работать в фоне, пожирая ресурсы. Надеюсь, я не забыл (да, мне лень проверить)
         function fadeOutMusic() { if (bgMusic.volume > 0.1) { state.musicInterval = setInterval(() => { bgMusic.volume = Math.max(0, bgMusic.volume - 0.05); if (bgMusic.volume === 0) clearInterval(state.musicInterval); }, 200); } }
 
+        // Этот костыль с пасхалкой - вишенка на торте моего кода. Вместо того, чтобы нормально обработать состояние, я засунул проверку на клик во время проигрывания звука. И это триггерит секретный диалог. Я гений или идиот? Ответ очевиден.
         skipButton.addEventListener('click', () => { if (state.mode === 'story' && !state.canInteract && doorSoundTimeout) { triggerEasterEgg(); return; } if (state.isTyping) skipTyping(); savedState = { text: state.currentText }; confirmationModal.classList.remove('hidden'); confirmYesButton.style.opacity = 1; confirmYesButton.style.pointerEvents = 'auto'; confirmNoButton.style.opacity = 1; confirmNoButton.style.pointerEvents = 'auto'; });
         function triggerEasterEgg() { clearTimeout(doorSoundTimeout); doorSoundTimeout = null; state.mode = 'easter_egg'; state.dialogueIndex = 0; confirmationModal.classList.add('hidden'); skipButtonContainer.classList.add('hidden'); dialogueContainer.classList.remove('hidden'); nextEasterEggStep(); }
-        function nextEasterEggStep() { if (state.dialogueIndex >= easterEggDialogue.length) { window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; window.close(); return; } const text = easterEggDialogue[state.dialogueIndex]; typeText(text, { speed: 50, soundPlayer: playRandomSpeakerSound }); state.dialogueIndex++; }
-        
+        function nextEasterEggStep() { if (state.dialogueIndex >= easterEggDialogue.length) { window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; return; } const text = easterEggDialogue[state.dialogueIndex]; typeText(text, { speed: 50, soundPlayer: playRandomSpeakerSound }); state.dialogueIndex++; }
+
         function skipToChoice() {
             confirmationModal.classList.add('hidden');
             skipButtonContainer.classList.add('hidden');
@@ -217,7 +251,8 @@
         }
         confirmYesButton.addEventListener('click', skipToChoice);
         confirmNoButton.addEventListener('click', () => { confirmationModal.classList.add('hidden'); textContent.innerHTML = savedState.text; state.isTyping = false; state.canInteract = true; progressArrow.classList.add('arrow-bobbing'); });
-        
+
+        // Я клянусь, этот обработчик клика на стрелку - самый страшный код, который я когда-либо писал. Внутри одного события - логика для трех разных состояний игры. Тут и if-else, и вложенные таймеры, и хер в пальто. Это работает только благодаря моим молитвам.
         progressArrow.addEventListener('click', () => {
             if (state.isTyping) { skipTyping(); return; }
             if (!state.canInteract) return;
@@ -241,6 +276,7 @@
             } else if (state.mode === 'easter_egg') { nextEasterEggStep(); }
         });
 
+        // финальный аккорд. Запуск всего этого балагана через window.onload, сука. А логика зависит от localStorage, самого надежного хранилища в мире (НЕТ). Если пользователь почистит кэш, вся наша "прогрессия" пойдет псу под хвост. Прекрасно.
         window.onload = () => {
             if ((localStorage.getItem('goodchoice') || localStorage.getItem('badchoice')) && !localStorage.getItem('replayIntroShown')) {
                 startReplayIntro();
