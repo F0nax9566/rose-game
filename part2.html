@@ -230,7 +230,7 @@
         function playSndTxt1() { sndTxt1.currentTime = 0; sndTxt1.play(); }
         function playSndSpeaker2() { sndSpeaker2.currentTime = 0; sndSpeaker2.play(); }
         // Функция "сбежать отсюда". Моя любимая.
-        function returnToMainMenu() { goodChoiceMusic.pause(); bgMusicPart2.pause(); window.location.href = 'rose.html'; }
+        function returnToMainMenu() { goodChoiceMusic.pause(); bgMusicPart2.pause(); window.location.href = 'index.html'; }
 
         function startPart2() { state.mode = 'part2_story'; state.branch = 'narrator1'; state.dialogueIndex = 0; dialogueContainer.classList.remove('hidden'); nextPart2Step(); }
         function showFinalChoice() {
@@ -556,7 +556,7 @@
             const action = () => {
                 fadeAudio(goodChoiceMusic);
                 setTimeout(() => {
-                    window.location.href = 'rose.html';
+                    window.location.href = 'index.html';
                 }, 3000);
             };
 
@@ -641,3 +641,4 @@
     </script>
 </body>
 </html>
+
