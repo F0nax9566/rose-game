@@ -1,18 +1,151 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <!-- Хватит с меня комметариев... -->
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>...</title>
+    <title>* (Вы видите цветок, который выглядит слишком знакомо.)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .tree-choice-title.disabled {
+            color: #555;
+            cursor: default;
+        }
+        .tree-choice-title.disabled:hover {
+            color: #555; 
+        }
+
+        #cheatEntryButton {
+            margin-top: 15px;
+            text-align: right;
+            color: #333;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #cheatEntryButton:hover {
+            color: #666;
+        }
+
+        #cheatPasswordInput {
+            width: 100%;
+            background-color: #000;
+            border: 2px solid #fff;
+            color: #fff;
+            font-family: 'Tiny5', monospace;
+            font-size: 28px;
+            padding: 10px;
+            margin: 20px 0;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .cheat-menu-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        .cheat-menu-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .cheat-menu-section h4 {
+            font-size: 28px;
+            margin: 0 0 15px 0;
+            color: #ccc;
+            text-align: center;
+        }
+
+        .cheat-button {
+            font-size: 24px;
+            cursor: pointer;
+            margin: 5px 10px;
+            padding: 5px 10px;
+            border: 2px solid #555;
+            display: inline-block;
+        }
+        .cheat-button:hover {
+            border-color: yellow;
+            color: yellow;
+        }
+        .cheat-button.active {
+            color: yellow;
+            border-color: yellow;
+            text-decoration: underline;
+        }
+        .cheat-button.clear {
+            border-color: #900;
+            color: #900;
+        }
+        .cheat-button.clear:hover {
+            border-color: #f00;
+            color: #f00;
+        }
+
+        .cheat-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        #cheatMenuModal .dialogue-box,
+        #choiceTreeModal .dialogue-box {
+            max-height: 85vh; 
+            overflow-y: auto;  
+            padding-right: 20px; 
+        }
+
+        #cheatMenuModal .dialogue-box::-webkit-scrollbar,
+        #choiceTreeModal .dialogue-box::-webkit-scrollbar {
+            width: 10px;
+        }
+        #cheatMenuModal .dialogue-box::-webkit-scrollbar-track,
+        #choiceTreeModal .dialogue-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #cheatMenuModal .dialogue-box::-webkit-scrollbar-thumb,
+        #choiceTreeModal .dialogue-box::-webkit-scrollbar-thumb {
+            background: #fff;
+            border: 2px solid #000;
+        }
+
+        #softResetButton {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #555;
+            text-align: center;
+            color: #888;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        #softResetButton:hover {
+            color: #ccc;
+        }
+
+        #trueResetButton {
+             margin-top: 10px;
+             padding-top: 10px;
+             border-top: none;
+        }
+
+    </style>
 </head>
 <body>
     <div id="whiteoutOverlay"></div>
 
-    <div id="mainMenu">
+    <div id="musicPromptModal" class="modal-overlay">
+        <div class="dialogue-box bordered">
+            <div class="scrollable-text" id="musicPromptText">
+    Из-за недавних изменений в том, как устроен этот мир, звуки больше не могут распространяться без вашего разрешения. Ваше путешествие ещё не началось, но эхо уже ждёт. Чтобы услышать его, вам нужно сделать первый шаг. Изменения в политике браузеров требуют взаимодействия с пользователем для воспроизведения аудио. Это необходимо, чтобы обеспечить вам наилучший опыт. Продолжая, вы соглашаетесь с тем, что тишина будет нарушена.
+</div>
+            <div id="musicConfirmButton">войти</div>
+        </div>
+    </div>
+
+    <div id="mainMenu" class="hidden">
         <div id="flowerContainer">
             <img id="flowerImage" src="https://github.com/F0nax9566/MrFonax/blob/main/files/rose.png?raw=true" alt="">
         </div>
@@ -23,37 +156,166 @@
         </div>
         <div id="idleText">* (вода начинает сохнуть.)</div>
     </div>
-    
-    <div id="choiceTreeButton">древо выборов</div>
-    
+
+    <div id="choiceTreeButton" class="hidden">древо выборов</div>
+
     <div id="choiceTreeModal" class="modal-overlay hidden">
         <div class="dialogue-box bordered">
             <div id="treeContent">
                 <div class="tree-part">
                     <h3>Часть Один</h3>
                     <div class="tree-choice-item">
-                        <span class="tree-choice-title" id="treeChoicePolyt">Полить</span>
-                        <span class="tree-choice-desc hidden">вы полили цветок, тем самым позволив ему прожить больше. кто если бы не вы?</span>
+                        <span class="tree-choice-title" id="treeChoicePolyt"></span>
+                        <span class="tree-choice-desc hidden"></span>
                     </div>
                     <div class="tree-choice-item">
-                        <span class="tree-choice-title" id="treeChoiceProsti">Прости</span>
-                        <span class="tree-choice-desc hidden">вы бросили цветок, посчитав что он вам не нужен.</span>
+                        <span class="tree-choice-title" id="treeChoiceProsti"></span>
+                        <span class="tree-choice-desc hidden"></span>
                     </div>
                 </div>
                  <div class="tree-part">
                     <h3>Часть Два</h3>
-                    <div class="tree-choice-item not-ready">не готово</div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceGrainContinue"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceNeutral"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceWaterGrainSorry"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceMonster"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
                 </div>
                 <div class="tree-part">
                     <h3>Часть Три</h3>
-                    <div class="tree-choice-item not-ready">не готово</div>
+                     <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceTrueEnding"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceRedemptionShare"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
+                    <div class="tree-choice-item">
+                        <span class="tree-choice-title" id="treeChoiceRedemptionFavorite"></span>
+                        <span class="tree-choice-desc hidden"></span>
+                    </div>
                 </div>
             </div>
             <div id="treeCloseButton">Назад</div>
+            <div id="softResetButton">сброс.</div>
             <div id="trueResetButton">истинный сброс.</div>
+            <div id="cheatEntryButton">???</div>
         </div>
     </div>
-    
+
+    <div id="cheatPasswordModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+            <h3 style="margin-top:0;">каждому дан шанс, но каждому ли дан второй?</h3>
+            <input type="text" id="cheatPasswordInput" placeholder="...введите путь...">
+            <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                <span class="choice-button" id="cheatPasswordConfirm" style="opacity: 1; pointer-events: auto;">Продолжить</span>
+                <span class="choice-button" id="cheatPasswordCancel" style="opacity: 1; pointer-events: auto;">Отмена</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="cheatMenuModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered" style="text-align: left;">
+            <h3 style="text-align: center; margin-top: 0;">Консоль Судьбы</h3>
+            <p style="font-size: 20px; color: #aaa; text-align: center; margin-bottom: 30px;">
+                Здесь ты можешь переписать историю. Но помни: каждое действие имеет последствия, даже то, которого не должно было быть. Не вини меня, если мир сломается.
+            </p>
+
+            <div class="cheat-menu-section">
+                <h4>Флаги Выбора (Прогресс)</h4>
+
+                
+                <h5 style="text-align: center; color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 24px; font-weight: normal;">1 глава</h5>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="goodchoice" data-exclusive="badchoice">goodchoice</div>
+                    <div class="cheat-button" data-key="badchoice" data-exclusive="goodchoice">badchoice</div>
+                    <div class="cheat-button clear" data-keys-to-clear="goodchoice,badchoice">очистить</div>
+                </div>
+
+                
+                <h5 style="text-align: center; color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 24px; font-weight: normal;">2 глава</h5>
+
+                <div style="text-align: center; color: #666; font-size: 20px; margin-bottom: 10px;">(Путь: Полить ч1)</div>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="graincontinue" data-exclusive="neutral">graincontinue</div>
+                    <div class="cheat-button" data-key="neutral" data-exclusive="graincontinue">neutral</div>
+                </div>
+
+                <div style="text-align: center; color: #666; font-size: 20px; margin-top: 15px; margin-bottom: 10px;">(Путь: Прости ч1)</div>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="watergrainsorry" data-exclusive="monster">watergrainsorry</div>
+                    <div class="cheat-button" data-key="monster" data-exclusive="watergrainsorry">monster</div>
+                </div>
+
+                <div class="cheat-controls" style="margin-top: 15px;">
+                    <div class="cheat-button clear" data-keys-to-clear="graincontinue,neutral,watergrainsorry,monster">очистить главу 2</div>
+                </div>
+
+                
+                <h5 style="text-align: center; color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 24px; font-weight: normal;">3 глава</h5>
+
+                <div style="text-align: center; color: #666; font-size: 20px; margin-bottom: 10px;">(Путь: Полить ч2)</div>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="trueending" data-exclusive="redemptionshare,redemptionfavorite">trueending</div>
+                </div>
+
+                <div style="text-align: center; color: #666; font-size: 20px; margin-top: 15px; margin-bottom: 10px;">(Путь: Искупление)</div>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="redemptionshare" data-exclusive="redemptionfavorite,trueending">redemptionshare</div>
+                    <div class="cheat-button" data-key="redemptionfavorite" data-exclusive="redemptionshare,trueending">redemptionfavorite</div>
+                </div>
+
+                <div class="cheat-controls" style="margin-top: 15px;">
+                    <div class="cheat-button clear" data-keys-to-clear="trueending,redemptionshare,redemptionfavorite">очистить главу 3</div>
+                </div>
+            </div>
+
+            <div class="cheat-menu-section">
+                <h4>Флаги Завершения (Память)</h4>
+                <div class="cheat-controls">
+                    <div class="cheat-button" data-key="goodchoicecomplete">goodchoicecomplete</div>
+                    <div class="cheat-button" data-key="part1badendingcomplete">part1badendingcomplete</div>
+                    <div class="cheat-button" data-key="monstercomplete">monstercomplete</div>
+                    <div class="cheat-button" data-key="watergrainsorrycomplete">watergrainsorrycomplete</div>
+                    <div class="cheat-button" data-key="redemptionfavoritecomplete">redemptionfavoritecomplete</div>
+                    <div class="cheat-button" data-key="redemptionsharecomplete">redemptionsharecomplete</div>
+                    <div class="cheat-button" data-key="trueendingcomplete">trueendingcomplete</div>
+                    <div class="cheat-button" data-key="graincontinuecomplete">graincontinuecomplete</div>
+                    <div class="cheat-button" data-key="neutralcomplete">neutralcomplete</div>
+                </div>
+                 <div class="cheat-controls" style="margin-top: 15px;">
+                     <div class="cheat-button clear" data-keys-to-clear="goodchoicecomplete,part1badendingcomplete,monstercomplete,watergrainsorrycomplete,redemptionfavoritecomplete,redemptionsharecomplete,trueendingcomplete,graincontinuecomplete,neutralcomplete">очистить всё</div>
+                 </div>
+            </div>
+
+            <div id="cheatMenuBack" style="margin-top: 30px; font-size: 32px; cursor: pointer; text-align: center;">Назад и перезагрузить</div>
+        </div>
+    </div>
+
+    <div id="softResetConfirmationModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+             <div class="scrollable-text" id="softResetConfirmationText">
+                Это сбросит ваш текущий прогресс и выборы, позволив начать историю заново. Продолжить?
+            </div>
+            <div id="softResetChoices" style="text-align: center; margin-top: 20px;">
+                <span class="choice-button" id="softResetConfirmYesButton" style="opacity: 1; pointer-events: auto;">Продолжить</span>
+                <span class="choice-button" id="softResetConfirmNoButton" style="opacity: 1; pointer-events: auto;">Отмена</span>
+            </div>
+        </div>
+    </div>
+
     <div id="resetConfirmationModal" class="modal-overlay hidden">
         <div class="dialogue-box bordered">
              <div class="scrollable-text" id="resetConfirmationText">
@@ -63,10 +325,20 @@
                 <span class="choice-button" id="resetConfirmYesButton" style="opacity: 1; pointer-events: auto;">Продолжить</span>
                 <span class="choice-button" id="resetConfirmNoButton" style="opacity: 1; pointer-events: auto;">Отмена</span>
             </div>
+            <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="resetSkipArrow" class="hidden" style="position: absolute; bottom: 15px; right: 20px; width: 24px; height: auto; cursor: pointer; image-rendering: pixelated;">
+        </div>
+    </div>
+
+    <div id="completionistModal" class="modal-overlay hidden">
+        <div class="dialogue-box bordered">
+            <div class="scrollable-text" id="completionistText"></div>
+            <img src="https://github.com/F0nax9566/MrFonax/blob/main/files/arrow.png?raw=true" id="completionistSkipArrow" style="position: absolute; bottom: 15px; right: 20px; width: 24px; height: auto; cursor: pointer; image-rendering: pixelated;">
         </div>
     </div>
 
     <script>
+
+        const mainMenu = document.getElementById('mainMenu');
         const idleText = document.getElementById('idleText');
         const choiceTreeButton = document.getElementById('choiceTreeButton');
         const choiceTreeModal = document.getElementById('choiceTreeModal');
@@ -77,80 +349,543 @@
         const resetConfirmYesButton = document.getElementById('resetConfirmYesButton');
         const resetConfirmNoButton = document.getElementById('resetConfirmNoButton');
         const whiteoutOverlay = document.getElementById('whiteoutOverlay');
+        const musicPromptModal = document.getElementById('musicPromptModal');
+        const musicConfirmButton = document.getElementById('musicConfirmButton');
+        const flowerImage = document.getElementById('flowerImage');
+        const flowerContainer = document.getElementById('flowerContainer');
+        const resetSkipArrow = document.getElementById('resetSkipArrow');
 
-        const mainMenuMusic = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Faint%20Glow%20-%20Toby%20Fox.mp3");
+        const softResetButton = document.getElementById('softResetButton');
+        const softResetConfirmationModal = document.getElementById('softResetConfirmationModal');
+        const softResetConfirmYesButton = document.getElementById('softResetConfirmYesButton');
+        const softResetConfirmNoButton = document.getElementById('softResetConfirmNoButton');
+
+        const cheatEntryButton = document.getElementById('cheatEntryButton');
+        const cheatPasswordModal = document.getElementById('cheatPasswordModal');
+        const cheatPasswordInput = document.getElementById('cheatPasswordInput');
+        const cheatPasswordConfirm = document.getElementById('cheatPasswordConfirm');
+        const cheatPasswordCancel = document.getElementById('cheatPasswordCancel');
+        const cheatMenuModal = document.getElementById('cheatMenuModal');
+        const cheatMenuBack = document.getElementById('cheatMenuBack');
+        const cheatButtons = document.querySelectorAll('.cheat-button');
+
+        const completionistModal = document.getElementById('completionistModal');
+        const completionistText = document.getElementById('completionistText');
+        const completionistSkipArrow = document.getElementById('completionistSkipArrow');
+        const menuButtonsContainer = document.getElementById('menuButtons');
+
+        const snd1 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/1.wav");
+        const snd3 = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/3.wav");
+
+        function getMusicTrackAndApplyEffects() {
+
+            if (localStorage.getItem('trueending')) {
+                return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Confession%20-%20Toby%20Fox.mp3";
+            }
+            if (localStorage.getItem('redemptionshare') || localStorage.getItem('redemptionfavorite')) {
+
+                if (flowerContainer) {
+                    flowerContainer.style.visibility = 'hidden'; 
+                }
+                return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Quiet%20Water%20-%20Toby%20Fox.mp3";
+            }
+
+            if (localStorage.getItem('graincontinue') || localStorage.getItem('neutral')) {
+                return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Memory%20-%20Toby%20Fox.mp3";
+            }
+            if (localStorage.getItem('monster')) {
+                return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Barrier%20-%20Toby%20Fox.mp3";
+            }
+            if (localStorage.getItem('watergrainsorry')) {
+                return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Mysterious%20Place.mp3";
+            }
+
+            return "https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/Faint%20Glow%20-%20Toby%20Fox.mp3";
+        }
+
+        const musicUrl = getMusicTrackAndApplyEffects();
+        const mainMenuMusic = new Audio(musicUrl);
         mainMenuMusic.loop = true;
+
+        const sndStrike = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/strike.wav");
+        const sndFlicker = new Audio("https://github.com/F0nax9566/MrFonax/raw/refs/heads/main/sounds/flicker.wav");
+
         let isMusicStarted = false;
         let idleTimer = null;
+        let typingState = { isTyping: false, timeoutId: null, fullText: '', element: null, onCompleteCallback: null };
+
+        const choiceMappings = [
+
+            { id: 'treeChoicePolyt', key: 'goodchoice', text: 'Полить', desc: 'вы полили цветок, тем самым позволив ему прожить дольше. кто, если бы не вы?' },
+            { id: 'treeChoiceProsti', key: 'badchoice', text: 'Прости', desc: 'вы бросили цветок, посчитав, что он вам не нужен.' },
+
+            { id: 'treeChoiceGrainContinue', key: 'graincontinue', text: 'полить x2', desc: 'вы полили цветок второй раз, даже после того, как наполнили его достаточным количеством воды для существования.' },
+            { id: 'treeChoiceNeutral', key: 'neutral', text: 'достаточно (концовка)', desc: 'вы решили, что цветок больше не нуждается в воде, оставив его кому-то другому.' },
+
+            { id: 'treeChoiceWaterGrainSorry', key: 'watergrainsorry', text: 'полить', desc: 'вы полили остатки цветка, в надежде, что семечко вырастет.' },
+            { id: 'treeChoiceMonster', key: 'monster', text: 'вы ужасны. (концовка)', desc: 'этот текст невозможно прочитать, так что передаю привет телеграм-каналу Архивчик и тому, кто это читает (грязный читер).' },
+
+            { id: 'treeChoiceTrueEnding', key: 'trueending', text: 'истинная концовка', desc: 'Вы не оставили цветок в одиночестве, заботливо полив его дважды. Вы любитель хороших концовок, хм?' },
+
+            { id: 'treeChoiceRedemptionShare', key: 'redemptionshare', text: 'поделиться (концовка)', desc: 'вы поделились водой с чужим цветком.' },
+            { id: 'treeChoiceRedemptionFavorite', key: 'redemptionfavorite', text: 'отсоединить (концовка)', desc: 'вы посчитали нужным сосредоточиться только на своём цветке.' },
+        ];
+
+        window.onload = () => {
+            setupMusicPrompt();
+            setupChoiceTreeListeners();
+            setupResetListeners();
+            setupCheatMenuListeners();
+            setupCompletionistDialogueListeners(); 
+
+            if (!localStorage.getItem('monster')) { 
+                 trueResetButton.style.display = 'none';
+            }
+
+            if (localStorage.getItem('monster')) {
+                initializeMonsterEnding();
+            } else if (checkAllEndingsComplete()) {
+                initializeCompletionistMenu();
+            }
+            else {
+                initializeNormalMenu();
+            }
+        };
+
+        function checkAllEndingsComplete() {
+            const completionFlags = [
+                'goodchoicecomplete', 
+                'part1badendingcomplete', 
+                'monstercomplete', 
+                'watergrainsorrycomplete', 
+                'redemptionfavoritecomplete', 
+                'redemptionsharecomplete', 
+                'trueendingcomplete', 
+                'graincontinuecomplete', 
+                'neutralcomplete'
+            ];
+            return completionFlags.every(flag => localStorage.getItem(flag));
+        }
+
+        choiceTreeButton.addEventListener('click', () => {
+            document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
+
+            if (localStorage.getItem('monster')) {
+                document.querySelectorAll('#treeContent h3, #treeContent .tree-choice-title, #treeContent .tree-choice-desc').forEach(el => {
+                    el.textContent = 'прости';
+                    if (el.classList.contains('tree-choice-title')) {
+                        el.classList.add('disabled');
+                        el.classList.remove('player-choice');
+                    }
+                });
+            } else {
+                choiceMappings.forEach(mapping => {
+                    const titleEl = document.getElementById(mapping.id);
+                    const descEl = (titleEl && titleEl.nextElementSibling && titleEl.nextElementSibling.classList.contains('tree-choice-desc')) 
+                        ? titleEl.nextElementSibling 
+                        : null;
+
+                    if (!titleEl || !descEl) {
+                        console.warn(`Элементы для ID ${mapping.id} не найдены.`);
+                        return;
+                    }
+
+                    if (localStorage.getItem(mapping.key)) {
+                        titleEl.textContent = mapping.text;
+                        descEl.textContent = mapping.desc;
+                        titleEl.classList.remove('disabled');
+                        titleEl.classList.add('player-choice');
+                    } else {
+                        titleEl.textContent = '???';
+                        descEl.textContent = ''; 
+                        titleEl.classList.add('disabled');
+                        titleEl.classList.remove('player-choice');
+                    }
+                });
+            }
+
+            choiceTreeModal.classList.remove('hidden');
+        });
+
+        function setupChoiceTreeListeners() {
+            treeCloseButton.addEventListener('click', () => choiceTreeModal.classList.add('hidden'));
+            choiceTreeModal.addEventListener('click', (event) => { 
+                if (event.target === choiceTreeModal) choiceTreeModal.classList.add('hidden'); 
+            });
+
+            treeChoiceTitles.forEach(title => {
+                title.addEventListener('click', (event) => {
+                    if (title.classList.contains('disabled')) {
+                        return;
+                    }
+                    event.stopPropagation();
+                    const currentDesc = title.nextElementSibling;
+                    const isHidden = currentDesc.classList.contains('hidden');
+                    document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
+                    if (isHidden) { 
+                        currentDesc.classList.remove('hidden'); 
+                    }
+                });
+            });
+        }
+
+        function setupCheatMenuListeners() {
+            cheatEntryButton.addEventListener('click', () => {
+                choiceTreeModal.classList.add('hidden');
+                cheatPasswordInput.value = '';
+                cheatPasswordModal.classList.remove('hidden');
+            });
+
+            cheatPasswordCancel.addEventListener('click', () => {
+                cheatPasswordModal.classList.add('hidden');
+                choiceTreeModal.classList.remove('hidden');
+            });
+
+            cheatPasswordConfirm.addEventListener('click', () => {
+                if (cheatPasswordInput.value.trim().toLowerCase() === 'я грязный читер') {
+                    sndFlicker.play();
+                    cheatPasswordModal.classList.add('hidden');
+                    updateCheatMenuUI();
+                    cheatMenuModal.classList.remove('hidden');
+                } else {
+                    sndStrike.play();
+                    alert('Неверный путь.');
+                }
+            });
+
+            cheatMenuBack.addEventListener('click', () => {
+                location.reload(); 
+            });
+
+            cheatButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.style.cursor === 'not-allowed') {
+                        return;
+                    }
+                    sndFlicker.currentTime = 0;
+                    sndFlicker.play();
+
+                    if (button.classList.contains('clear')) {
+                        const keysToClear = button.dataset.keysToClear.split(',');
+                        keysToClear.forEach(key => localStorage.removeItem(key.trim()));
+                    } else {
+                        const keyToSet = button.dataset.key;
+                        const exclusiveKey = button.dataset.exclusive;
+
+                        if (exclusiveKey) {
+                            exclusiveKey.split(',').forEach(key => localStorage.removeItem(key.trim()));
+                            localStorage.setItem(keyToSet, 'true');
+                        } else {
+                            if (localStorage.getItem(keyToSet)) {
+                                localStorage.removeItem(keyToSet);
+                            } else {
+                                localStorage.setItem(keyToSet, 'true');
+                            }
+                        }
+                    }
+                    updateCheatMenuUI();
+                });
+            });
+        }
+
+        function updateCheatMenuUI() {
+            cheatButtons.forEach(button => {
+                if (!button.classList.contains('clear') && button.dataset.key) {
+                    const key = button.dataset.key;
+                    if (localStorage.getItem(key)) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        function setupResetListeners() {
+             if (!localStorage.getItem('monster')) {
+                trueResetButton.addEventListener('click', () => {
+                    choiceTreeModal.classList.add('hidden');
+                    resetConfirmationModal.classList.remove('hidden');
+                });
+            }
+            resetConfirmNoButton.addEventListener('click', () => {
+                resetConfirmationModal.classList.add('hidden');
+                resetSkipArrow.classList.add('hidden');
+                typingState.onCompleteCallback = null;
+                clearTimeout(typingState.timeoutId);
+                if (!localStorage.getItem('monster')) {
+                    choiceTreeModal.classList.remove('hidden');
+                }
+            });
+            resetConfirmYesButton.addEventListener('click', performTrueReset);
+
+            softResetButton.addEventListener('click', () => {
+                choiceTreeModal.classList.add('hidden');
+                softResetConfirmationModal.classList.remove('hidden');
+            });
+            softResetConfirmNoButton.addEventListener('click', () => {
+                softResetConfirmationModal.classList.add('hidden');
+                choiceTreeModal.classList.remove('hidden');
+            });
+            softResetConfirmYesButton.addEventListener('click', performSoftReset);
+        }
+
+        function performSoftReset() {
+            softResetConfirmationModal.classList.add('hidden');
+            sndFlicker.play();
+            const keysToReset = ['goodchoice', 'badchoice', 'watergrainsorry', 'monster', 'replayIntroShown', 'graincontinue', 'neutral', 'trueending', 'redemptionshare', 'redemptionfavorite'];
+            keysToReset.forEach(key => localStorage.removeItem(key));
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        }
+
+        function performTrueReset() {
+            resetConfirmationModal.classList.add('hidden');
+            whiteoutOverlay.style.opacity = 1;
+            sndFlicker.play();
+            setTimeout(() => {
+                localStorage.clear();
+                location.reload();
+            }, 2000);
+        }
 
         function tryStartMusic() {
             if (isMusicStarted) return;
-            const playPromise = mainMenuMusic.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => { isMusicStarted = true; })
-                         .catch(error => { console.log("Autoplay blocked. Click to start music."); });
-            }
+            mainMenuMusic.play().then(() => { isMusicStarted = true; }).catch(e => console.log("Audio play failed: " + e));
         }
 
         function startIdleTimer() {
-            idleText.style.opacity = 0;
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => { idleText.style.opacity = 1; }, 10000);
         }
-        
-        window.onload = () => {
-            tryStartMusic();
-            startIdleTimer();
-        };
-        document.body.addEventListener('click', tryStartMusic, { once: true });
 
-        choiceTreeButton.addEventListener('click', () => {
-            const polyt = document.getElementById('treeChoicePolyt');
-            const prosti = document.getElementById('treeChoiceProsti');
-            polyt.classList.remove('player-choice');
-            prosti.classList.remove('player-choice');
-            if (localStorage.getItem('goodchoice')) {
-                polyt.classList.add('player-choice');
-            } else if (localStorage.getItem('badchoice')) {
-                prosti.classList.add('player-choice');
+        function typeTextSimple(element, text, config = {}) {
+            clearTimeout(typingState.timeoutId);
+            element.innerHTML = '';
+            typingState = { 
+                isTyping: true, 
+                timeoutId: null, 
+                fullText: text, 
+                element: element,
+                onCompleteCallback: config.onComplete 
+            };
+            resetSkipArrow.classList.remove('hidden', 'arrow-bobbing');
+            let charIndex = 0;
+            function typeChar() {
+                if (charIndex < text.length) {
+                    element.innerHTML += text.charAt(charIndex);
+                    charIndex++;
+                    typingState.timeoutId = setTimeout(typeChar, 50);
+                } else {
+                    typingState.isTyping = false;
+                    resetSkipArrow.classList.add('arrow-bobbing');
+                }
             }
-            document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
-            choiceTreeModal.classList.remove('hidden');
-        });
+            typeChar();
+        }
 
-        treeCloseButton.addEventListener('click', () => { choiceTreeModal.classList.add('hidden'); });
-        choiceTreeModal.addEventListener('click', (event) => { if (event.target === choiceTreeModal) { choiceTreeModal.classList.add('hidden'); } });
+        function handleResetSkip() {
+            if (typingState.isTyping) {
+                clearTimeout(typingState.timeoutId);
+                typingState.isTyping = false;
+                typingState.element.innerHTML = typingState.fullText;
+                resetSkipArrow.classList.add('arrow-bobbing');
+            } else if (typingState.onCompleteCallback) {
+                typingState.onCompleteCallback();
+            }
+        }
+        resetSkipArrow.addEventListener('click', handleResetSkip);
 
-        treeChoiceTitles.forEach(title => {
-            title.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const currentDesc = title.nextElementSibling;
-                const isHidden = currentDesc.classList.contains('hidden');
-                document.querySelectorAll('.tree-choice-desc').forEach(desc => desc.classList.add('hidden'));
-                if (isHidden) { currentDesc.classList.remove('hidden'); }
+        function setupMusicPrompt() {
+            musicConfirmButton.style.cssText = 'margin-top: 30px; font-size: 32px; cursor: pointer; text-align: center;';
+            musicConfirmButton.addEventListener('mouseover', () => musicConfirmButton.style.color = 'yellow');
+            musicConfirmButton.addEventListener('mouseout', () => musicConfirmButton.style.color = '#fff');
+        }
+
+        function initializeNormalMenu() {
+            musicConfirmButton.addEventListener('click', () => {
+                tryStartMusic();
+                startIdleTimer();
+                musicPromptModal.classList.add('hidden');
+                mainMenu.classList.remove('hidden');
+                choiceTreeButton.classList.remove('hidden');
             });
-        });
+        }
 
-        trueResetButton.addEventListener('click', () => {
-            choiceTreeModal.classList.add('hidden');
-            resetConfirmationModal.classList.remove('hidden');
-        });
+        let completionistDialogueIndex = -1;
+        const completionistDialogue = [
+            { text: "* Так ты всё-таки решил увидеть всё?" },
+            { text: "* Хм? Тебе нужно больше?" },
+            { text: "* Ладно, уговорил." },
+            { text: '* Пароль от моего суперсекретного меню — «я грязный читер».' },
+            { text: "* Удачи, дружок." },
+            { text: "* Ах да..." },
+            { text: "* Можешь сделать истинный сброс, если хочешь." },
+            { text: "* Я же не изверг, разве не так?" }
+        ];
 
-        resetConfirmNoButton.addEventListener('click', () => {
-            resetConfirmationModal.classList.add('hidden');
-            choiceTreeModal.classList.remove('hidden');
-        });
-        
-        resetConfirmYesButton.addEventListener('click', () => {
-            resetConfirmationModal.classList.add('hidden');
-            whiteoutOverlay.style.opacity = 1;
-            setTimeout(() => {
-                localStorage.removeItem('goodchoice');
-                localStorage.removeItem('badchoice');
-                localStorage.removeItem('replayIntroShown');
-                location.reload();
-            }, 2000);
-        });
+        function playRandomCompletionistSound() {
+            const sounds = [snd1, snd3];
+            const sound = sounds[Math.floor(Math.random() * sounds.length)];
+            sound.currentTime = 0;
+            sound.play().catch(e => {}); 
+        }
+
+        function typeTextForCompletionist(element, text, config) {
+            clearTimeout(typingState.timeoutId);
+            element.innerHTML = '';
+            typingState = { 
+                isTyping: true, 
+                timeoutId: null, 
+                fullText: text, 
+                element: element,
+                onCompleteCallback: config.onComplete 
+            };
+            completionistSkipArrow.classList.remove('hidden', 'arrow-bobbing');
+
+            let charIndex = 0;
+            function typeChar() {
+                if (charIndex < text.length) {
+                    const char = text.charAt(charIndex);
+                    element.innerHTML += char;
+
+                    if (char.trim() !== '' && char !== '*') {
+                        playRandomCompletionistSound();
+                    }
+
+                    charIndex++;
+                    typingState.timeoutId = setTimeout(typeChar, config.speed || 50);
+                } else {
+                    typingState.isTyping = false;
+                    completionistSkipArrow.classList.add('arrow-bobbing');
+                    if (typingState.onCompleteCallback) {
+                        typingState.onCompleteCallback();
+                    }
+                }
+            }
+            typeChar();
+        }
+
+        function advanceCompletionistDialogue() {
+            if (typingState.isTyping) return;
+
+            completionistDialogueIndex++;
+            if (completionistDialogueIndex >= completionistDialogue.length) {
+
+                completionistModal.classList.add('hidden');
+                sndFlicker.currentTime = 0;
+                sndFlicker.play();
+                typingState.onCompleteCallback = null;
+
+                if (!localStorage.getItem('monster')) {
+                    trueResetButton.style.display = 'block';
+                }
+
+                return;
+            }
+
+            const currentLine = completionistDialogue[completionistDialogueIndex];
+
+            typeTextForCompletionist(completionistText, currentLine.text, {
+                speed: 50
+            });
+        }
+
+        function handleCompletionistSkip() {
+            if (typingState.isTyping) {
+                clearTimeout(typingState.timeoutId);
+                typingState.isTyping = false;
+                typingState.element.innerHTML = typingState.fullText;
+                completionistSkipArrow.classList.add('arrow-bobbing');
+                if (typingState.onCompleteCallback) {
+                    typingState.onCompleteCallback();
+                }
+            } else {
+                advanceCompletionistDialogue();
+            }
+        }
+
+        function setupCompletionistDialogueListeners() {
+            completionistSkipArrow.addEventListener('click', handleCompletionistSkip);
+            completionistModal.addEventListener('click', (event) => {
+                if(event.target === completionistModal) {
+                    if (typingState.isTyping) {
+                         handleCompletionistSkip();
+                    } else {
+                        completionistModal.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        function initializeCompletionistMenu() {
+             musicConfirmButton.addEventListener('click', () => {
+                tryStartMusic();
+                startIdleTimer();
+                musicPromptModal.classList.add('hidden');
+                mainMenu.classList.remove('hidden');
+                choiceTreeButton.classList.remove('hidden');
+
+                menuButtonsContainer.innerHTML = '';
+                const completionistButton = document.createElement('a');
+                completionistButton.href = "#";
+                completionistButton.className = 'menu-button';
+                completionistButton.textContent = 'Это всё?';
+                completionistButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    completionistDialogueIndex = -1; 
+                    typingState.isTyping = false; 
+                    clearTimeout(typingState.timeoutId);
+                    completionistModal.classList.remove('hidden');
+                    advanceCompletionistDialogue();
+                });
+                menuButtonsContainer.appendChild(completionistButton);
+            });
+        }
+
+        function initializeMonsterEnding() {
+            musicPromptModal.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+            choiceTreeButton.classList.remove('hidden');
+            flowerImage.src = "https://github.com/F0nax9566/MrFonax/blob/main/files/black_rose.png?raw=true";
+
+            tryStartMusic();
+
+            function disappearOnClick(event) {
+                event.preventDefault();
+                this.classList.add('hidden');
+                sndStrike.currentTime = 0;
+                sndStrike.play();
+            }
+            document.querySelectorAll('.menu-button').forEach(btn => btn.addEventListener('click', disappearOnClick));
+            document.getElementById('flowerContainer').addEventListener('click', disappearOnClick);
+
+            trueResetButton.style.display = 'none';
+
+            softResetButton.onclick = () => {
+                choiceTreeModal.classList.add('hidden');
+                resetConfirmationModal.classList.remove('hidden');
+                const resetConfirmationText = document.getElementById('resetConfirmationText');
+                document.getElementById('resetChoices').classList.add('hidden');
+                const monsterResetDialogue = ["* Ты серьёзно?", "* Ты пытаешься изменить всё, что ты сделал?", "* Не смотри на меня так, это был твой выбор.", "* Но, если ты так пожелаешь...", "* Я позволю тебе сделать сброс, если ты отдашь мне свою душу.", "* Выгодный размен, разве не так?", "* ...", "* С тобой приятно иметь дело."];
+                let dialogueIndex = 0;
+                function typeNextLine() {
+                    if (dialogueIndex < monsterResetDialogue.length) {
+                        const currentLine = monsterResetDialogue[dialogueIndex];
+                        dialogueIndex++;
+                        typeTextSimple(resetConfirmationText, currentLine, { 
+                            onComplete: typeNextLine 
+                        });
+                    } else {
+                        typingState.onCompleteCallback = null;
+                        resetSkipArrow.classList.add('hidden');
+                        performSoftReset(); 
+                    }
+                }
+                typeNextLine();
+            };
+        }
     </script>
 </body>
-</html>
+</html> <!-- Я... живой? -->
