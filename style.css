@@ -1,3 +1,9 @@
+/* 
+Copyright (C) 2025 Fonax
+This work is licensed under GNU GPLv3.
+Full license: https://www.gnu.org/licenses/gpl-3.0.html
+*/
+
 :root {
     font-smooth: never;
     -webkit-font-smoothing: none;
@@ -273,3 +279,4 @@ body.part2-active-body {
 }
 
 @keyframes bobbingArrow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+
